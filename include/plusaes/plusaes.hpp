@@ -13,11 +13,11 @@
 namespace plusaes {
 namespace detail {
 
-const int kBlockSize = 4;
+typedef unsigned int Word;
 
-typedef unsigned int UInt32;
-typedef UInt32 State[kBlockSize];
-typedef UInt32 RoundKey[kBlockSize];
+const int kBlockSize = 4;
+typedef Word State[kBlockSize];
+typedef Word RoundKey[kBlockSize];
 typedef std::vector<RoundKey> RoundKeys;
 
 inline void add_round_key(const RoundKey &key, State &state) {
@@ -64,14 +64,14 @@ const unsigned char kInvSbox[] = {
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
 
-inline UInt32 sub_word(const UInt32 w) {
+inline Word sub_word(const Word w) {
     return kSbox[(w >>  0) & 0xFF] <<  0 |
            kSbox[(w >>  8) & 0xFF] <<  8 |
            kSbox[(w >> 16) & 0xFF] << 16 |
            kSbox[(w >> 24) & 0xFF] << 24;
 }
 
-inline UInt32 inv_sub_word(const UInt32 w) {
+inline Word inv_sub_word(const Word w) {
     return kInvSbox[(w >>  0) & 0xFF] <<  0 |
            kInvSbox[(w >>  8) & 0xFF] <<  8 |
            kInvSbox[(w >> 16) & 0xFF] << 16 |
@@ -92,9 +92,9 @@ inline void inv_sub_bytes(State &state) {
 
 inline void shift_rows(State &state) {
     const State ori = { state[0], state[1], state[2], state[3] };
-    for (int r = 1; r < sizeof(UInt32); ++r) {
-        const UInt32 m2 = 0xFF << (r * 8);
-        const UInt32 m1 = ~m2;
+    for (int r = 1; r < sizeof(Word); ++r) {
+        const Word m2 = 0xFF << (r * 8);
+        const Word m1 = ~m2;
         for (int c = 0; c < kBlockSize; ++c) {
             state[c] = (state[c] & m1) | (ori[(c + r) % kBlockSize] & m2);
         }
@@ -103,11 +103,11 @@ inline void shift_rows(State &state) {
 
 inline void inv_shift_rows(State &state) {
     const State ori = { state[0], state[1], state[2], state[3] };
-    for (int r = 1; r < sizeof(UInt32); ++r) {
-        const UInt32 m2 = 0xFF << (r * 8);
-        const UInt32 m1 = ~m2;
+    for (int r = 1; r < sizeof(Word); ++r) {
+        const Word m2 = 0xFF << (r * 8);
+        const Word m1 = ~m2;
         for (int c = 0; c < kBlockSize; ++c) {
-            state[c] = (state[c] & m1) | (ori[(c + kBlockSize - r) % sizeof(UInt32)] & m2);
+            state[c] = (state[c] & m1) | (ori[(c + kBlockSize - r) % sizeof(Word)] & m2);
         }
     }
 }
@@ -176,7 +176,7 @@ inline void inv_mix_columns(State &state) {
     }
 }
 
-inline UInt32 rot_word(const UInt32 v) {
+inline Word rot_word(const Word v) {
     return ((v >> 8) & 0x00FFFFFF) | ((v & 0xFF) << 24);
 }
 
@@ -198,7 +198,7 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
         throw std::invalid_argument("Invalid key size");
     }
 
-    const UInt32 rcon[] = {
+    const Word rcon[] = {
         0x00, 0x01, 0x02, 0x04, 0x08, 0x10,
         0x20, 0x40, 0x80, 0x1b, 0x36
     };
@@ -207,13 +207,13 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
     const int nk = key_size / nb;
     const int nr = get_round_count(key_size);
 
-    std::vector<UInt32> w(nb * (nr + 1));
+    std::vector<Word> w(nb * (nr + 1));
     for (int i = 0; i < nk; ++ i) {
-        memcpy(&w[i], key + (i * sizeof(UInt32)), sizeof(UInt32));
+        memcpy(&w[i], key + (i * sizeof(Word)), sizeof(Word));
     }
 
     for (int i = nk; i < nb * (nr + 1); ++i) {
-        UInt32 t = w[i - 1];
+        Word t = w[i - 1];
         if (i % nk == 0) {
             auto x0 = rot_word(t);
             auto x = sub_word(rot_word(t));
@@ -227,23 +227,23 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
     }
 
     RoundKeys keys(nr + 1);
-    memcpy(&keys[0], &w[0], w.size() * sizeof(UInt32));
+    memcpy(&keys[0], &w[0], w.size() * sizeof(Word));
 
     return keys;
 }
 
 inline void copy_bytes_to_state(const unsigned char data[16], State &state) {
-    memcpy(&state[0], data +  0, sizeof(UInt32));
-    memcpy(&state[1], data +  4, sizeof(UInt32));
-    memcpy(&state[2], data +  8, sizeof(UInt32));
-    memcpy(&state[3], data + 12, sizeof(UInt32));
+    memcpy(&state[0], data +  0, sizeof(Word));
+    memcpy(&state[1], data +  4, sizeof(Word));
+    memcpy(&state[2], data +  8, sizeof(Word));
+    memcpy(&state[3], data + 12, sizeof(Word));
 }
 
 inline void copy_state_to_bytes(const State &state, unsigned char buf[16]) {
-    memcpy(buf +  0, &state[0], sizeof(UInt32));
-    memcpy(buf +  4, &state[1], sizeof(UInt32));
-    memcpy(buf +  8, &state[2], sizeof(UInt32));
-    memcpy(buf + 12, &state[3], sizeof(UInt32));
+    memcpy(buf +  0, &state[0], sizeof(Word));
+    memcpy(buf +  4, &state[1], sizeof(Word));
+    memcpy(buf +  8, &state[2], sizeof(Word));
+    memcpy(buf + 12, &state[3], sizeof(Word));
 }
 
 inline void encrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
