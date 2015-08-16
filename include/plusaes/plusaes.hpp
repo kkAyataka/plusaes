@@ -181,7 +181,7 @@ inline Word rot_word(const Word v) {
     return ((v >> 8) & 0x00FFFFFF) | ((v & 0xFF) << 24);
 }
 
-inline unsigned int get_round_count(const int key_size) {
+inline unsigned int get_round_count(const int key_size) throw(std::invalid_argument) {
     switch (key_size) {
     case 16:
         return 10;
@@ -194,7 +194,7 @@ inline unsigned int get_round_count(const int key_size) {
     }
 }
 
-inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
+inline RoundKeys expand_key(const unsigned char *key, const int key_size) throw(std::invalid_argument) {
     if (key_size != 16 && key_size != 24 && key_size != 32) {
         throw std::invalid_argument("Invalid key size");
     }
