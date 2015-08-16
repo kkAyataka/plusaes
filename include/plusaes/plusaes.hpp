@@ -13,6 +13,7 @@
 namespace plusaes {
 namespace detail {
 
+const int kWordSize = 4;
 typedef unsigned int Word;
 
 const int kBlockSize = 4;
@@ -92,7 +93,7 @@ inline void inv_sub_bytes(State &state) {
 
 inline void shift_rows(State &state) {
     const State ori = { state[0], state[1], state[2], state[3] };
-    for (int r = 1; r < sizeof(Word); ++r) {
+    for (int r = 1; r < kWordSize; ++r) {
         const Word m2 = 0xFF << (r * 8);
         const Word m1 = ~m2;
         for (int c = 0; c < kBlockSize; ++c) {
@@ -103,11 +104,11 @@ inline void shift_rows(State &state) {
 
 inline void inv_shift_rows(State &state) {
     const State ori = { state[0], state[1], state[2], state[3] };
-    for (int r = 1; r < sizeof(Word); ++r) {
+    for (int r = 1; r < kWordSize; ++r) {
         const Word m2 = 0xFF << (r * 8);
         const Word m1 = ~m2;
         for (int c = 0; c < kBlockSize; ++c) {
-            state[c] = (state[c] & m1) | (ori[(c + kBlockSize - r) % sizeof(Word)] & m2);
+            state[c] = (state[c] & m1) | (ori[(c + kBlockSize - r) % kWordSize] & m2);
         }
     }
 }
@@ -209,7 +210,7 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
 
     std::vector<Word> w(nb * (nr + 1));
     for (int i = 0; i < nk; ++ i) {
-        memcpy(&w[i], key + (i * sizeof(Word)), sizeof(Word));
+        memcpy(&w[i], key + (i * kWordSize), kWordSize);
     }
 
     for (int i = nk; i < nb * (nr + 1); ++i) {
@@ -227,23 +228,23 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) {
     }
 
     RoundKeys keys(nr + 1);
-    memcpy(&keys[0], &w[0], w.size() * sizeof(Word));
+    memcpy(&keys[0], &w[0], w.size() * kWordSize);
 
     return keys;
 }
 
 inline void copy_bytes_to_state(const unsigned char data[16], State &state) {
-    memcpy(&state[0], data +  0, sizeof(Word));
-    memcpy(&state[1], data +  4, sizeof(Word));
-    memcpy(&state[2], data +  8, sizeof(Word));
-    memcpy(&state[3], data + 12, sizeof(Word));
+    memcpy(&state[0], data +  0, kWordSize);
+    memcpy(&state[1], data +  4, kWordSize);
+    memcpy(&state[2], data +  8, kWordSize);
+    memcpy(&state[3], data + 12, kWordSize);
 }
 
 inline void copy_state_to_bytes(const State &state, unsigned char buf[16]) {
-    memcpy(buf +  0, &state[0], sizeof(Word));
-    memcpy(buf +  4, &state[1], sizeof(Word));
-    memcpy(buf +  8, &state[2], sizeof(Word));
-    memcpy(buf + 12, &state[3], sizeof(Word));
+    memcpy(buf +  0, &state[0], kWordSize);
+    memcpy(buf +  4, &state[1], kWordSize);
+    memcpy(buf +  8, &state[2], kWordSize);
+    memcpy(buf + 12, &state[3], kWordSize);
 }
 
 inline void encrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
