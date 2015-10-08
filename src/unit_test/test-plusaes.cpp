@@ -1,6 +1,14 @@
 #include "gtest/gtest.h"
 #include "plusaes/plusaes.hpp"
 
+using namespace plusaes::detail;
+
+TEST(AES, rot_word) {
+    ASSERT_EQ(rot_word(0x3c4fcf09), 0x093c4fcf);
+    ASSERT_EQ(rot_word(0x05766c2a), 0x2a05766c);
+    ASSERT_EQ(rot_word(0x7ff65973), 0x737ff659);
+}
+
 TEST(AES, encrypt128) {
     const unsigned char data[] = {0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d, 0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34};
     const int data_size = sizeof(data);
