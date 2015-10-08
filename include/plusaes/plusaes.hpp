@@ -314,7 +314,7 @@ inline void encrypt(
 
     if (mode == MODE_ECB) {
         const int state_size = (4 * detail::kBlockSize);
-        const int bc = data_size / state_size;
+        const unsigned long bc = data_size / state_size;
         for (int i = 0; i < bc; ++i) {
             detail::encrypt16(rkeys, data + (i * bc), encrypted + (i * bc));
         }
@@ -345,7 +345,7 @@ inline void decrypt(
         const int state_size = (4 * detail::kBlockSize);
         const int rem = data_size % state_size;
 
-        const int bc = data_size / state_size;
+        const unsigned long bc = data_size / state_size;
         for (int i = 0; i < bc; ++i) {
             detail::decrypt16(rkeys, data + (i * bc), decrypted + (i * bc));
         }
