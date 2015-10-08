@@ -17,8 +17,16 @@ const int kWordSize = 4;
 typedef unsigned int Word;
 
 const int kBlockSize = 4;
-typedef Word State[kBlockSize];
-typedef Word RoundKey[kBlockSize];
+typedef struct _State {
+    Word s[4];
+    Word & operator[](const int index) {
+        return s[index];
+    }
+    const Word & operator[](const int index) const {
+        return s[index];
+    }
+} State;
+typedef State RoundKey;
 typedef std::vector<RoundKey> RoundKeys;
 
 inline void add_round_key(const RoundKey &key, State &state) {
