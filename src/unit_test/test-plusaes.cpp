@@ -3,6 +3,13 @@
 
 using namespace plusaes::detail;
 
+TEST(AES, sbox) {
+    for (int i = 0; i < 256; ++i) {
+        const unsigned char v = kSbox[i];
+        ASSERT_EQ(i, kInvSbox[v]);
+    }
+}
+
 TEST(AES, rot_word) {
     ASSERT_EQ(rot_word(0x3c4fcf09), 0x093c4fcf);
     ASSERT_EQ(rot_word(0x05766c2a), 0x2a05766c);
