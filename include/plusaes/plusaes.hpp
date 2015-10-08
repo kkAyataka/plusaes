@@ -224,8 +224,6 @@ inline RoundKeys expand_key(const unsigned char *key, const int key_size) throw(
     for (int i = nk; i < nb * (nr + 1); ++i) {
         Word t = w[i - 1];
         if (i % nk == 0) {
-            auto x0 = rot_word(t);
-            auto x = sub_word(rot_word(t));
             t = sub_word(rot_word(t)) ^ rcon[i / nk];
         }
         else if (nk > 6 && i % nk == 4) {
