@@ -297,12 +297,33 @@ inline void decrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsi
     copy_state_to_bytes(s, decrypted);
 }
 
+template<int KeyLen>
+std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
+    std::vector<unsigned char> key(KeyLen - 1);
+    memcpy(&key[0], *key_str, KeyLen - 1);
+    return key;
+}
 
 } // namespace detail
 
 /** Version number of plusaes. */
 unsigned int version() {
     return PLUSAES_VERSION;
+}
+
+/** Create 128-bit key from string. */
+std::vector<unsigned char> key_from_string(const char (*key_str)[17]) {
+    return detail::key_from_string<17>(key_str);
+}
+
+/** Create 192-bit key from string. */
+std::vector<unsigned char> key_from_string(const char (*key_str)[25]) {
+    return detail::key_from_string<25>(key_str);
+}
+
+/** Create 256-bit key from string. */
+std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
+    return detail::key_from_string<33>(key_str);
 }
 
 typedef enum {
