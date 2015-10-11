@@ -41,8 +41,8 @@ TEST(AES, expand_key_128) {
     RoundKeys keys = expand_key(key, sizeof(key));
 
     ASSERT_EQ(keys.size(), 11);
-    for (int i = 0; i < 11; ++i) {
-        ASSERT_EQ(memcmp(keys[i].s, ok_keys[i], sizeof(key)), 0);
+    for (int i = 0; i < keys.size(); ++i) {
+        ASSERT_EQ(memcmp(keys[i].s, ok_keys[i], 16), 0);
     }
 }
 
