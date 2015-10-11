@@ -32,6 +32,23 @@ TEST(AES, inv_sub_word) {
     ASSERT_EQ(inv_sub_word(0xea44ed01), 0xbb865309);
 }
 
+TEST(AES, shift_rows) {
+    State s = {0x04b7ca63, 0x51d05309, 0xe7e060cd, 0x8ce170ba};
+    const State ok_s = {0x8ce05363, 0x04e16009, 0x51b770cd, 0xe7d0caba};
+
+    shift_rows(s);
+    ASSERT_EQ(memcmp(s.w, ok_s.w, sizeof(s.w)), 0);
+}
+
+TEST(AES, inv_shift_rows) {
+    State s = {0x6822d93b, 0x73fb74fc, 0xe0cb6757, 0x2d0e59c0};
+    const State ok_s = {0x73cb593b, 0xe00ed9fc, 0x2d227457, 0x68fb67c0};
+
+    inv_shift_rows(s);
+    ASSERT_EQ(memcmp(s.w, ok_s.w, sizeof(s.w)), 0);
+}
+
+
 TEST(AES, expand_key_128) {
     const unsigned char key[] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
     const unsigned char ok_keys[11][16] = {
