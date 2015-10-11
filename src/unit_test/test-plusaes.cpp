@@ -3,7 +3,7 @@
 
 using namespace plusaes::detail;
 
-TEST(PLUSAES, version) {
+TEST(AES, version) {
     ASSERT_EQ(plusaes::version(), 0x00000100);
 }
 
