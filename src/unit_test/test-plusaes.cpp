@@ -48,6 +48,21 @@ TEST(AES, inv_shift_rows) {
     ASSERT_EQ(memcmp(s.w, ok_s.w, sizeof(s.w)), 0);
 }
 
+TEST(AES, mix_columns) {
+    State s = {0xed08cc68, 0xbcd2bb0a, 0x55f52e64, 0x78e84a24};
+    const State ok_s = {0xbd981e7a, 0x14d1b6ac, 0xdd44691a, 0x3e2deb06};
+
+    mix_columns(s);
+    ASSERT_EQ(memcmp(s.w, ok_s.w, sizeof(s.w)), 0);
+}
+
+TEST(AES, inv_mix_columns) {
+    State s = {0x0e93ec88, 0xb6e4e7f5, 0xc9f432cc, 0x1494d206};
+    const State ok_s = {0xccaec75c, 0x1972c8e3, 0x83efe54a, 0xc733a909};
+
+    inv_mix_columns(s);
+    ASSERT_EQ(memcmp(s.w, ok_s.w, sizeof(s.w)), 0);
+}
 
 TEST(AES, expand_key_128) {
     const unsigned char key[] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
