@@ -10,6 +10,10 @@
 #include <stdexcept>
 #include <vector>
 
+/** Version number of plusaes.
+ * 0x01020304 -> 1.2.3.4 */
+#define PLUSAES_VERSION 0x00000100
+
 namespace plusaes {
 namespace detail {
 
@@ -295,6 +299,11 @@ inline void decrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsi
 
 
 } // namespace detail
+
+/** Version number of plusaes. */
+unsigned int version() {
+    return PLUSAES_VERSION;
+}
 
 typedef enum {
     MODE_ECB,
