@@ -105,6 +105,24 @@ TEST(AES, expand_key_256) {
     }
 }
 
+TEST(AES, key_from_string_128) {
+    const char key_str[] = "1234567890123456";
+    std::vector<unsigned char> key = plusaes::key_from_string(&key_str);
+    ASSERT_EQ(memcmp(&key[0], key_str, 16), 0);
+}
+
+TEST(AES, key_from_string_192) {
+    const char key_str[] = "123456789012345678901234";
+    std::vector<unsigned char> key = plusaes::key_from_string(&key_str);
+    ASSERT_EQ(memcmp(&key[0], key_str, 24), 0);
+}
+
+TEST(AES, key_from_string_256) {
+    const char key_str[] = "abcdefghijklMNOPQRSTUVwxYz789012";
+    std::vector<unsigned char> key = plusaes::key_from_string(&key_str);
+    ASSERT_EQ(memcmp(&key[0], key_str, 32), 0);
+}
+
 TEST(AES, encrypt128) {
     const unsigned char data[] = {0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d, 0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34};
     const int data_size = sizeof(data);
