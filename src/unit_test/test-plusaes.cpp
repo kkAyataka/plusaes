@@ -3,6 +3,10 @@
 
 using namespace plusaes::detail;
 
+TEST(PLUSAES, version) {
+    ASSERT_EQ(plusaes::version(), 0x00000100);
+}
+
 TEST(AES, sbox) {
     for (int i = 0; i < 256; ++i) {
         const unsigned char v = kSbox[i];
