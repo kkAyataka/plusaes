@@ -26,6 +26,12 @@ TEST(AES, sub_word) {
     ASSERT_EQ(sub_word(0x737ff659), 0x8fd242cb);
 }
 
+TEST(AES, inv_sub_word) {
+    ASSERT_EQ(inv_sub_word(0x00217f71), 0x527b6b2c);
+    ASSERT_EQ(inv_sub_word(0x4a25bbb1), 0x5cc2fe56);
+    ASSERT_EQ(inv_sub_word(0xea44ed01), 0xbb865309);
+}
+
 TEST(AES, expand_key_128) {
     const unsigned char key[] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
     const unsigned char ok_keys[11][16] = {
