@@ -42,7 +42,7 @@ TEST(AES, expand_key_128) {
 
     ASSERT_EQ(keys.size(), 11);
     for (int i = 0; i < keys.size(); ++i) {
-        ASSERT_EQ(memcmp(keys[i].s, ok_keys[i], 16), 0);
+        ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
 
@@ -69,7 +69,7 @@ TEST(AES, expand_key_192) {
 
     ASSERT_EQ(keys.size(), 13);
     for (int i = 0; i < keys.size(); ++i) {
-        ASSERT_EQ(memcmp(keys[i].s, ok_keys[i], 16), 0);
+        ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
 
@@ -97,7 +97,7 @@ TEST(AES, expand_key_256) {
 
     ASSERT_EQ(keys.size(), 15);
     for (int i = 0; i < keys.size(); ++i) {
-        ASSERT_EQ(memcmp(keys[i].s, ok_keys[i], 16), 0);
+        ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
 
