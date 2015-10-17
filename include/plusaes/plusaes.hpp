@@ -346,16 +346,17 @@ inline void encrypt(
         const int state_size = (4 * detail::kBlockSize);
         const unsigned long bc = data_size / state_size;
         for (int i = 0; i < bc; ++i) {
-            detail::encrypt16(rkeys, data + (i * bc), encrypted + (i * bc));
+            detail::encrypt16(rkeys, data + (i * state_size), encrypted + (i * state_size));
         }
 
         const int rem = data_size % state_size;
+        const char pad = state_size - rem;
         if (rem != 0) {
-            std::vector<unsigned char> ib(state_size), outb(state_size);
+            std::vector<unsigned char> ib(state_size, pad), outb(state_size);
             memcpy(&ib[0], data + data_size - rem, rem);
 
             detail::encrypt16(rkeys, &ib[0], &outb[0]);
-            memcpy(encrypted + (data_size - rem), &outb[0], rem);
+            memcpy(encrypted + (data_size - rem), &outb[0], state_size);
         }
     }
 }
@@ -366,27 +367,22 @@ inline void decrypt(
     const unsigned char* key,
     const unsigned int key_size,
     const OperationMode mode,
-    unsigned char *decrypted
+    unsigned char *decrypted,
+    unsigned long *padded_size
     ) {
 
     const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
 
     if (mode == MODE_ECB) {
         const int state_size = (4 * detail::kBlockSize);
-        const int rem = data_size % state_size;
 
         const unsigned long bc = data_size / state_size;
         for (int i = 0; i < bc; ++i) {
-            detail::decrypt16(rkeys, data + (i * bc), decrypted + (i * bc));
+            detail::decrypt16(rkeys, data + (i * state_size), decrypted + (i * state_size));
         }
-
         
-        if (rem != 0) {
-            std::vector<unsigned char> ib(state_size), outb(state_size);
-            memcpy(&ib[0], data + data_size - rem, rem);
-
-            detail::decrypt16(rkeys, &ib[0], &outb[0]);
-            memcpy(decrypted + (data_size - rem), &outb[0], rem);
+        if (padded_size) {
+            *padded_size = decrypted[data_size - 1];
         }
     }
 }
