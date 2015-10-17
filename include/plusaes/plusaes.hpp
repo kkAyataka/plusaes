@@ -259,7 +259,7 @@ inline void copy_state_to_bytes(const State &state, unsigned char buf[16]) {
     memcpy(buf + 12, &state[3], kWordSize);
 }
 
-inline void encrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
+inline void encrypt_state(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
     State s;
     copy_bytes_to_state(data, s);
 
@@ -279,7 +279,7 @@ inline void encrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsi
     copy_state_to_bytes(s, encrypted);
 }
 
-inline void decrypt16(const RoundKeys &rkeys, const unsigned char data[16], unsigned char decrypted[16]) {
+inline void decrypt_state(const RoundKeys &rkeys, const unsigned char data[16], unsigned char decrypted[16]) {
     State s;
     copy_bytes_to_state(data, s);
 
@@ -346,7 +346,7 @@ inline void encrypt(
     if (mode == MODE_ECB) {
         const unsigned long bc = data_size / detail::kStateSize;
         for (int i = 0; i < bc; ++i) {
-            detail::encrypt16(rkeys, data + (i * detail::kStateSize), encrypted + (i * detail::kStateSize));
+            detail::encrypt_state(rkeys, data + (i * detail::kStateSize), encrypted + (i * detail::kStateSize));
         }
 
         const int rem = data_size % detail::kStateSize;
@@ -355,7 +355,7 @@ inline void encrypt(
             std::vector<unsigned char> ib(detail::kStateSize, pad), outb(detail::kStateSize);
             memcpy(&ib[0], data + data_size - rem, rem);
 
-            detail::encrypt16(rkeys, &ib[0], &outb[0]);
+            detail::encrypt_state(rkeys, &ib[0], &outb[0]);
             memcpy(encrypted + (data_size - rem), &outb[0], detail::kStateSize);
         }
     }
@@ -376,7 +376,7 @@ inline void decrypt(
     if (mode == MODE_ECB) {
         const unsigned long bc = data_size / detail::kStateSize;
         for (int i = 0; i < bc; ++i) {
-            detail::decrypt16(rkeys, data + (i * detail::kStateSize), decrypted + (i * detail::kStateSize));
+            detail::decrypt_state(rkeys, data + (i * detail::kStateSize), decrypted + (i * detail::kStateSize));
         }
         
         if (padded_size) {
