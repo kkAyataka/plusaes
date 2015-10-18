@@ -644,64 +644,6 @@ inline Error decrypt_cbc(
     return ERROR_OK;
 }
 
-
-typedef enum {
-    MODE_ECB,
-    MODE_CBC
-} OperationMode;
-
-inline void encrypt(
-    const unsigned char* data,
-    const unsigned long data_size,
-    const unsigned char* key,
-    const unsigned int key_size,
-    const OperationMode mode,
-    unsigned char *encrypted
-    ) {
-    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
-
-    if (mode == MODE_ECB) {
-        const unsigned long bc = data_size / detail::kStateSize;
-        for (int i = 0; i < bc; ++i) {
-            detail::encrypt_state(rkeys, data + (i * detail::kStateSize), encrypted + (i * detail::kStateSize));
-        }
-
-        const int rem = data_size % detail::kStateSize;
-        const char pad = detail::kStateSize - rem;
-        if (rem != 0) {
-            std::vector<unsigned char> ib(detail::kStateSize, pad), outb(detail::kStateSize);
-            memcpy(&ib[0], data + data_size - rem, rem);
-
-            detail::encrypt_state(rkeys, &ib[0], &outb[0]);
-            memcpy(encrypted + (data_size - rem), &outb[0], detail::kStateSize);
-        }
-    }
-}
-
-inline void decrypt(
-    const unsigned char* data,
-    const unsigned long data_size,
-    const unsigned char* key,
-    const unsigned int key_size,
-    const OperationMode mode,
-    unsigned char *decrypted,
-    unsigned long *padded_size
-    ) {
-
-    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
-
-    if (mode == MODE_ECB) {
-        const unsigned long bc = data_size / detail::kStateSize;
-        for (int i = 0; i < bc; ++i) {
-            detail::decrypt_state(rkeys, data + (i * detail::kStateSize), decrypted + (i * detail::kStateSize));
-        }
-        
-        if (padded_size) {
-            *padded_size = decrypted[data_size - 1];
-        }
-    }
-}
-
 } // namespace plusaes
 
 #endif // PLUSAES_HPP__
