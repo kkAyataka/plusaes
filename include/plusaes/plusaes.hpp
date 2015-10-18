@@ -407,6 +407,11 @@ Error check_decrypt_cond(
             return ERROR_INVALID_BUFFER_SIZE;
         }
     }
+    else {
+        if (decrypted_size < (data_size - kStateSize)) {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
+    }
 
     return ERROR_OK;
 }
@@ -523,7 +528,12 @@ inline Error decrypt_ecb(
     if (padded_size) {
         *padded_size = last[detail::kStateSize - 1];
         const unsigned long cs = detail::kStateSize - *padded_size;
-        memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+        if (decrypted_size >= (bc * detail::kStateSize) + cs) {
+            memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+        }
+        else {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
@@ -620,7 +630,12 @@ inline Error decrypt_cbc(
     if (padded_size) {
         *padded_size = last[detail::kStateSize - 1];
         const unsigned long cs = detail::kStateSize - *padded_size;
-        memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+        if (decrypted_size >= (bc * detail::kStateSize) + cs) {
+            memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+        }
+        else {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
