@@ -247,6 +247,12 @@ TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
 
     std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
     plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), 0, &encrypted[0], encrypted.size(), true);
-
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
+
+    std::vector<unsigned char> decrypted(encrypted.size());
+    unsigned long padded = 0;
+    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), 0, &decrypted[0], decrypted.size(), &padded);
+
+    const std::string s(decrypted.begin(), decrypted.end() - padded);
+    ASSERT_EQ(data, s);
 }
