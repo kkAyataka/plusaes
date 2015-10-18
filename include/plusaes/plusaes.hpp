@@ -306,6 +306,25 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
     return key;
 }
 
+bool is_valid_key_size(const unsigned long key_size) {
+    if (key_size != 16 && key_size == 24 && key_size != 32) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool is_valid_encrypted_size(const unsigned long data_size, const unsigned long buf_size, const bool pads) {
+    if (pads) {
+        const unsigned long padding_size = detail::kStateSize - (data_size % detail::kStateSize);
+        return buf_size >= (data_size + padding_size);
+    }
+    else {
+        return buf_size >= data_size;
+    }
+}
+
 } // namespace detail
 
 /** Version number of plusaes. */
@@ -326,6 +345,133 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[25]) {
 /** Create 256-bit key from string. */
 std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
     return detail::key_from_string<33>(key_str);
+}
+
+
+typedef enum {
+    ERROR_OK = 0,
+    ERROR_INVALID_DATA_SIZE,
+    ERROR_INVALID_KEY_SIZE,
+    ERROR_INVALID_BUFFER_SIZE
+} Error;
+
+/**
+ * Encrypts data with ECB mode.
+ * @param [in]  data Data.
+ * @param [in]  data_size Data size.
+ *  If the pads is false, data size must be multiple of 16.
+ * @param [in]  key key bytes. The key length must be 16 (128-bit), 24 (192-bit) or 32 (256-bit).
+ * @param [in]  key_size key size.
+ * @param [out] encrypted Encrypted data buffer.
+ * @param [in]  encrypted_size Encrypted data buffer size.
+ * @param [in]  pads If this value is true, encrypted data is padded by PKCS.
+ *  Encrypted data size must be multiple of 16.
+ *  If the pads is true, encrypted data is padded with PKCS.
+ *  So the data is multiple of 16, encrypted data size needs additonal 16 bytes.
+ * @since 1.0.0
+ */
+inline Error encrypt_ecb(
+    const unsigned char * data,
+    const unsigned long data_size,
+    const unsigned char * key,
+    const unsigned long key_size,
+    unsigned char *encrypted,
+    const unsigned long encrypted_size,
+    const bool pads
+    ) {
+    // check data size
+    if (!pads && (data_size % detail::kStateSize == 0)) {
+        return ERROR_INVALID_DATA_SIZE;
+    }
+
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return ERROR_INVALID_KEY_SIZE;
+    }
+
+    // check encrypted buffer size
+    if (!detail::is_valid_encrypted_size(data_size, encrypted_size, pads)) {
+        return ERROR_INVALID_BUFFER_SIZE;
+    }
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
+
+    const unsigned long bc = data_size / detail::kStateSize;
+    for (int i = 0; i < bc; ++i) {
+        detail::encrypt_state(rkeys, data + (i * detail::kStateSize), encrypted + (i * detail::kStateSize));
+    }
+
+    if (pads) {
+        const int rem = data_size % detail::kStateSize;
+        const char pad_v = detail::kStateSize - rem;
+
+        std::vector<unsigned char> ib(detail::kStateSize, pad_v), ob(detail::kStateSize);
+        memcpy(&ib[0], data + data_size - rem, rem);
+
+        detail::encrypt_state(rkeys, &ib[0], &ob[0]);
+        memcpy(encrypted + (data_size - rem), &ob[0], detail::kStateSize);
+    }
+
+    return ERROR_OK;
+}
+
+/**
+ * Decrypts data with ECB mode.
+ * @param [in]  data Data bytes.
+ * @param [in]  data_size Data size.
+ * @param [in]  key Key bytes.
+ * @param [in]  key_size
+ * @param [out] decrypted Decrypted data buffer.
+ * @param [in]  decrypted_size Decrypted data buffer size.
+ * @param [out] padding
+ * @since 1.0.0
+ */
+inline Error decrypt_ecb(
+    const unsigned char * data,
+    const unsigned long data_size,
+    const unsigned char * key,
+    const unsigned long key_size,
+    unsigned char * decrypted,
+    const unsigned long decrypted_size,
+    unsigned long * padded_size
+    ) {
+    // check data size
+    if (data_size % 16 != 0) {
+        return ERROR_INVALID_DATA_SIZE;
+    }
+
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return ERROR_INVALID_KEY_SIZE;
+    }
+
+    // check decrypted buffer size
+    if (!padded_size) {
+        if (decrypted_size < data_size) {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
+    }
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
+
+    const unsigned long bc = data_size / detail::kStateSize - 1;
+    for (int i = 0; i < bc; ++i) {
+        detail::decrypt_state(rkeys, data + (i * detail::kStateSize), decrypted + (i * detail::kStateSize));
+    }
+
+    unsigned char last[detail::kStateSize] = {};
+    detail::decrypt_state(rkeys, data + (bc * detail::kStateSize), last);
+
+    if (padded_size) {
+        *padded_size = last[detail::kStateSize - 1];
+        const unsigned long cs = detail::kStateSize - *padded_size;
+        memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+    }
+    else {
+        memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
+    }
+
+    return ERROR_OK;
 }
 
 typedef enum {
