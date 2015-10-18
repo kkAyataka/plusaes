@@ -194,22 +194,24 @@ TEST(AES, encrypt_decrypt_ecb_128_key_not_mul_16) {
         0xEF, 0x20, 0x0B, 0x46, 0x2A, 0x06, 0x15, 0xF5, 0x4A, 0x79, 0xB1, 0x8F, 0x40, 0x76, 0x67, 0x29,
         0x79, 0x96, 0x9A, 0x47, 0x76, 0x03, 0x59, 0x84, 0xB8, 0x34, 0x8C, 0x0E, 0xF5, 0xE0, 0x0F, 0x1F
     };
+
     const std::vector<unsigned char> key = plusaes::key_from_string(&"1234567890123456");
 
-    std::string data =  "1,2,3,4,5,6,7,8,9,10\n"
-                        "11,12,13,14,15,16,17,18,19,20\n"
-                        "21,22,23,24,25,26,27,28,29,30\n"
-                        "abcd, efgh, ijkl, mnop, qrst, uvwx, yz\n"
-                        "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
-                        "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
+    const std::string data =
+        "1,2,3,4,5,6,7,8,9,10\n"
+        "11,12,13,14,15,16,17,18,19,20\n"
+        "21,22,23,24,25,26,27,28,29,30\n"
+        "abcd, efgh, ijkl, mnop, qrst, uvwx, yz\n"
+        "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
+        "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
 
     std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
-    plusaes::encrypt((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), plusaes::MODE_ECB, &encrypted[0]);
+    plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), true);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
-    std::vector<unsigned char> decrypted(data.size() + (16 - data.size() % 16));
+    std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
-    plusaes::decrypt(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), plusaes::MODE_ECB, &decrypted[0], &padded);
+    plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
