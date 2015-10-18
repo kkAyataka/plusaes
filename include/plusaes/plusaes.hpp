@@ -259,6 +259,12 @@ inline void copy_state_to_bytes(const State &state, unsigned char buf[16]) {
     memcpy(buf + 12, &state[3], kWordSize);
 }
 
+inline void xor_data(unsigned char data[kStateSize], const unsigned char v[kStateSize]) {
+    for (int i = 0; i < kStateSize; ++i) {
+        data[i] ^= v[i];
+    }
+}
+
 inline void encrypt_state(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
     State s;
     copy_bytes_to_state(data, s);
@@ -347,13 +353,39 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
     return detail::key_from_string<33>(key_str);
 }
 
-
 typedef enum {
     ERROR_OK = 0,
     ERROR_INVALID_DATA_SIZE,
     ERROR_INVALID_KEY_SIZE,
     ERROR_INVALID_BUFFER_SIZE
 } Error;
+
+namespace detail {
+
+Error check_encrypt_cond(
+    const unsigned long data_size,
+    const unsigned long key_size,
+    const unsigned long encrypted_size,
+    const bool pads) {
+    // check data size
+    if (!pads && (data_size % kStateSize == 0)) {
+        return ERROR_INVALID_DATA_SIZE;
+    }
+
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return ERROR_INVALID_KEY_SIZE;
+    }
+
+    // check encrypted buffer size
+    if (!detail::is_valid_encrypted_size(data_size, encrypted_size, pads)) {
+        return ERROR_INVALID_BUFFER_SIZE;
+    }
+
+    return ERROR_OK;
+}
+
+} // namespace detail
 
 /**
  * Encrypts data with ECB mode.
@@ -469,6 +501,57 @@ inline Error decrypt_ecb(
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
+    }
+
+    return ERROR_OK;
+}
+
+inline Error encrypt_cbc(
+    const unsigned char * data,
+    const unsigned long data_size,
+    const unsigned char * key,
+    const unsigned long key_size,
+    const unsigned char (* iv)[16],
+    unsigned char * encrypted,
+    const unsigned long encrypted_size,
+    const bool pads
+    ) {
+    const Error e = detail::check_encrypt_cond(data_size, key_size, encrypted_size, pads);
+    if (e != ERROR_OK) {
+        return e;
+    }
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+
+    unsigned char s[detail::kStateSize] = {}; // encrypting data
+
+    // encrypt 1st state
+    memcpy(s, data, detail::kStateSize);
+    if (iv) {
+        detail::xor_data(s, *iv);
+    }
+    detail::encrypt_state(rkeys, s, encrypted);
+
+    const unsigned long bc = data_size / detail::kStateSize;
+    for (int i = 1; i < bc; ++i) {
+        const int offset = i * detail::kStateSize;
+        memcpy(s, data + offset, detail::kStateSize);
+        detail::xor_data(s, encrypted + offset - detail::kStateSize);
+
+        detail::encrypt_state(rkeys, s, encrypted + offset);
+    }
+
+    if (pads) {
+        const int rem = data_size % detail::kStateSize;
+        const char pad_v = detail::kStateSize - rem;
+
+        std::vector<unsigned char> ib(detail::kStateSize, pad_v), ob(detail::kStateSize);
+        memcpy(&ib[0], data + data_size - rem, rem);
+
+        detail::xor_data(&ib[0], encrypted + (bc - 1) * detail::kStateSize);
+
+        detail::encrypt_state(rkeys, &ib[0], &ob[0]);
+        memcpy(encrypted + (data_size - rem), &ob[0], detail::kStateSize);
     }
 
     return ERROR_OK;
