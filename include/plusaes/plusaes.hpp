@@ -473,10 +473,12 @@ inline Error encrypt_ecb(
  * @param [in]  data Data bytes.
  * @param [in]  data_size Data size.
  * @param [in]  key Key bytes.
- * @param [in]  key_size
+ * @param [in]  key_size Key size.
  * @param [out] decrypted Decrypted data buffer.
  * @param [in]  decrypted_size Decrypted data buffer size.
- * @param [out] padding
+ * @param [out] padding_size If this value is 0, this function does not remove padding.
+ *  If this value is not 0, this function removes padding by PKCS
+ *  and returns padding size using padding_size.
  * @since 1.0.0
  */
 inline Error decrypt_ecb(
@@ -520,6 +522,22 @@ inline Error decrypt_ecb(
     return ERROR_OK;
 }
 
+/**
+ * Encrypt data with CBC mode.
+ * @param [in]  data Data.
+ * @param [in]  data_size Data size.
+ *  If the pads is false, data size must be multiple of 16.
+ * @param [in]  key key bytes. The key length must be 16 (128-bit), 24 (192-bit) or 32 (256-bit).
+ * @param [in]  key_size key size.
+ * @param [in]  iv Initialize vector.
+ * @param [out] encrypted Encrypted data buffer.
+ * @param [in]  encrypted_size Encrypted data buffer size.
+ * @param [in]  pads If this value is true, encrypted data is padded by PKCS.
+ *  Encrypted data size must be multiple of 16.
+ *  If the pads is true, encrypted data is padded with PKCS.
+ *  So the data is multiple of 16, encrypted data size needs additonal 16 bytes.
+ * @since 1.0.0
+ */
 inline Error encrypt_cbc(
     const unsigned char * data,
     const unsigned long data_size,
@@ -571,6 +589,20 @@ inline Error encrypt_cbc(
     return ERROR_OK;
 }
 
+/**
+ * Decrypt data with CBC mode.
+ * @param [in]  data Data bytes.
+ * @param [in]  data_size Data size.
+ * @param [in]  key Key bytes.
+ * @param [in]  key_size Key size.
+ * @param [in]  iv Initialize vector.
+ * @param [out] decrypted Decrypted data buffer.
+ * @param [in]  decrypted_size Decrypted data buffer size.
+ * @param [out] padding_size If this value is 0, this function does not remove padding.
+ *  If this value is not 0, this function removes padding by PKCS
+ *  and returns padding size using padding_size.
+ * @since 1.0.0
+ */
 inline Error decrypt_cbc(
     const unsigned char * data,
     const unsigned long data_size,
