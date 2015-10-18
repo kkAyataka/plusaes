@@ -442,19 +442,9 @@ inline Error encrypt_ecb(
     const unsigned long encrypted_size,
     const bool pads
     ) {
-    // check data size
-    if (!pads && (data_size % detail::kStateSize == 0)) {
-        return ERROR_INVALID_DATA_SIZE;
-    }
-
-    // check key size
-    if (!detail::is_valid_key_size(key_size)) {
-        return ERROR_INVALID_KEY_SIZE;
-    }
-
-    // check encrypted buffer size
-    if (!detail::is_valid_encrypted_size(data_size, encrypted_size, pads)) {
-        return ERROR_INVALID_BUFFER_SIZE;
+    const Error e = detail::check_encrypt_cond(data_size, key_size, encrypted_size, pads);
+    if (e != ERROR_OK) {
+        return e;
     }
 
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
@@ -498,21 +488,9 @@ inline Error decrypt_ecb(
     const unsigned long decrypted_size,
     unsigned long * padded_size
     ) {
-    // check data size
-    if (data_size % 16 != 0) {
-        return ERROR_INVALID_DATA_SIZE;
-    }
-
-    // check key size
-    if (!detail::is_valid_key_size(key_size)) {
-        return ERROR_INVALID_KEY_SIZE;
-    }
-
-    // check decrypted buffer size
-    if (!padded_size) {
-        if (decrypted_size < data_size) {
-            return ERROR_INVALID_BUFFER_SIZE;
-        }
+    const Error e = detail::check_decrypt_cond(data_size, key_size, decrypted_size, padded_size);
+    if (e != ERROR_OK) {
+        return e;
     }
 
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
