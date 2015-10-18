@@ -394,7 +394,7 @@ inline Error encrypt_ecb(
         return ERROR_INVALID_BUFFER_SIZE;
     }
 
-    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
 
     const unsigned long bc = data_size / detail::kStateSize;
     for (int i = 0; i < bc; ++i) {
@@ -452,7 +452,7 @@ inline Error decrypt_ecb(
         }
     }
 
-    const detail::RoundKeys rkeys = detail::expand_key(key, key_size);
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
 
     const unsigned long bc = data_size / detail::kStateSize - 1;
     for (int i = 0; i < bc; ++i) {
