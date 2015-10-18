@@ -385,6 +385,32 @@ Error check_encrypt_cond(
     return ERROR_OK;
 }
 
+Error check_decrypt_cond(
+    const unsigned long data_size,
+    const unsigned long key_size,
+    const unsigned long decrypted_size,
+    const unsigned long * padded_size
+    ) {
+    // check data size
+    if (data_size % 16 != 0) {
+        return ERROR_INVALID_DATA_SIZE;
+    }
+
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return ERROR_INVALID_KEY_SIZE;
+    }
+
+    // check decrypted buffer size
+    if (!padded_size) {
+        if (decrypted_size < data_size) {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
+    }
+
+    return ERROR_OK;
+}
+
 } // namespace detail
 
 /**
@@ -556,6 +582,53 @@ inline Error encrypt_cbc(
 
     return ERROR_OK;
 }
+
+inline Error decrypt_cbc(
+    const unsigned char * data,
+    const unsigned long data_size,
+    const unsigned char * key,
+    const unsigned long key_size,
+    const unsigned char (* iv)[16],
+    unsigned char * decrypted,
+    const unsigned long decrypted_size,
+    unsigned long * padded_size
+    ) {
+    const Error e = detail::check_decrypt_cond(data_size, key_size, decrypted_size, padded_size);
+    if (e != ERROR_OK) {
+        return e;
+    }
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+
+    // decrypt 1st state
+    detail::decrypt_state(rkeys, data, decrypted);
+    if (iv) {
+        detail::xor_data(decrypted, *iv);
+    }
+
+    const unsigned long bc = data_size / detail::kStateSize - 1;
+    for (int i = 1; i < bc; ++i) {
+        const int offset = i * detail::kStateSize;
+        detail::decrypt_state(rkeys, data + offset, decrypted + offset);
+        detail::xor_data(decrypted + offset, data + offset - detail::kStateSize);
+    }
+
+    unsigned char last[detail::kStateSize] = {};
+    detail::decrypt_state(rkeys, data + (bc * detail::kStateSize), last);
+    detail::xor_data(last, data + (bc * detail::kStateSize - detail::kStateSize));
+
+    if (padded_size) {
+        *padded_size = last[detail::kStateSize - 1];
+        const unsigned long cs = detail::kStateSize - *padded_size;
+        memcpy(decrypted + (bc * detail::kStateSize), last, cs);
+    }
+    else {
+        memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
+    }
+
+    return ERROR_OK;
+}
+
 
 typedef enum {
     MODE_ECB,
