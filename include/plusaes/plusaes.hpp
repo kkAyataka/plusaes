@@ -368,7 +368,7 @@ Error check_encrypt_cond(
     const unsigned long encrypted_size,
     const bool pads) {
     // check data size
-    if (!pads && (data_size % kStateSize == 0)) {
+    if (!pads && (data_size % kStateSize != 0)) {
         return ERROR_INVALID_DATA_SIZE;
     }
 
