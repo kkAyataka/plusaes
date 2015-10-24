@@ -31,13 +31,19 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
     const unsigned char (* iv)[16],
     const unsigned char * ok_encrypted, const bool padding) {
 
-    std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
+    const long encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
+    std::vector<unsigned char> encrypted(encrypted_size);
     plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), iv, &encrypted[0], encrypted.size(), padding);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
-    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
+    if (padding) {
+        plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
+    }
+    else {
+        plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), 0);
+    }
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
@@ -320,4 +326,5 @@ TEST(AES, encrypt_decrypt_cbc_192_key_mul_16_iv) {
     const unsigned char iv[16] = {0x73, 0xD4, 0xA3, 0x24, 0x73, 0xF4, 0xD6, 0x90, 0xEE, 0xA2, 0x5E, 0xE6, 0xE0, 0x9F, 0xF5, 0x49};
 
     test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
+    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, false);
 }
