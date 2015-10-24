@@ -4,6 +4,41 @@
 
 using namespace plusaes::detail;
 
+namespace {
+
+void test_encrypt_decrypt_ecb(const std::string & data, const std::vector<unsigned char> key,
+    const unsigned char * ok_encrypted, const bool padding) {
+
+    std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
+    plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), padding);
+    ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
+
+    std::vector<unsigned char> decrypted(encrypted.size());
+    unsigned long padded = 0;
+    plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
+
+    const std::string s(decrypted.begin(), decrypted.end() - padded);
+    ASSERT_EQ(data, s);
+}
+
+void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsigned char> key,
+    const unsigned char (* iv)[16],
+    const unsigned char * ok_encrypted, const bool padding) {
+
+    std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
+    plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), 0, &encrypted[0], encrypted.size(), padding);
+    ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
+
+    std::vector<unsigned char> decrypted(encrypted.size());
+    unsigned long padded = 0;
+    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), 0, &decrypted[0], decrypted.size(), &padded);
+
+    const std::string s(decrypted.begin(), decrypted.end() - padded);
+    ASSERT_EQ(data, s);
+}
+
+} // no namespace
+
 TEST(AES, version) {
     ASSERT_EQ(plusaes::version(), 0x00000100);
 }
@@ -190,16 +225,7 @@ TEST(AES, encrypt_decrypt_ecb_128_key_not_mul_16) {
         "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
         "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
 
-    std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
-    plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), true);
-    ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
-
-    std::vector<unsigned char> decrypted(encrypted.size());
-    unsigned long padded = 0;
-    plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
-
-    const std::string s(decrypted.begin(), decrypted.end() - padded);
-    ASSERT_EQ(data, s);
+    test_encrypt_decrypt_ecb(data, key, ok_encrypted, true);
 }
 
 TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
@@ -230,14 +256,5 @@ TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
         "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
         "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
 
-    std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
-    plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), 0, &encrypted[0], encrypted.size(), true);
-    ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
-
-    std::vector<unsigned char> decrypted(encrypted.size());
-    unsigned long padded = 0;
-    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), 0, &decrypted[0], decrypted.size(), &padded);
-
-    const std::string s(decrypted.begin(), decrypted.end() - padded);
-    ASSERT_EQ(data, s);
+    test_encrypt_decrypt_cbc(data, key, 0, ok_encrypted, true);
 }
