@@ -355,3 +355,65 @@ TEST(AES, encrypt_decrypt_cbc_256_key_not_mul_16_iv) {
 
     test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
 }
+
+TEST(AES, invalid_key_size) {
+    const std::string data = "0123456789ABCDEF";
+    const unsigned char key[14] = {};
+    unsigned char encrypted[16] = {};
+    unsigned char decrypted[16] = {};
+
+    plusaes::Error e;
+    unsigned long padding = 0;
+
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), key, sizeof(key), decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), key, sizeof(key), 0, decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+}
+
+TEST(AES, invalid_data_size) {
+    const std::string data = "0123456789ABCDEF1";
+    const unsigned char key[16] = {};
+    unsigned char encrypted[17] = {};
+    unsigned char decrypted[17] = {};
+
+    plusaes::Error e;
+
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), false);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), key, sizeof(key), decrypted, sizeof(decrypted), 0);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), false);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), key, sizeof(key), 0, decrypted, sizeof(decrypted), 0);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+}
+
+TEST(AES, invalid_buffer_size) {
+    const std::string data = "0123456789ABCDEF";
+    const unsigned char key[16] = {};
+    unsigned char encrypted[31] = {};
+    unsigned char encrypted2[32] = {};
+    unsigned char decrypted[15] = {};
+
+    plusaes::Error e;
+    unsigned long padding = 0;
+
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+
+    e = plusaes::decrypt_ecb(encrypted2, sizeof(encrypted2), key, sizeof(key), decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+
+    e = plusaes::decrypt_cbc(encrypted2, sizeof(encrypted2), key, sizeof(key), 0, decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+}
