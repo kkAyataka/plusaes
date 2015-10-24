@@ -313,7 +313,7 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
 }
 
 bool is_valid_key_size(const unsigned long key_size) {
-    if (key_size != 16 && key_size == 24 && key_size != 32) {
+    if (key_size != 16 && key_size != 24 && key_size != 32) {
         return false;
     }
     else {
