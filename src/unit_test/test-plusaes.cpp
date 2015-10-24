@@ -9,19 +9,22 @@ namespace {
 void test_encrypt_decrypt_ecb(const std::string & data, const std::vector<unsigned char> key,
     const unsigned char * ok_encrypted, const bool padding) {
 
+    plusaes::Error e;
     const long encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
     std::vector<unsigned char> encrypted(encrypted_size);
-    plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), padding);
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), padding);
+    ASSERT_EQ(e, plusaes::ERROR_OK);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
     if (padding) {
-        plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
+        e = plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
     }
     else {
-        plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), 0);
+        e = plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), 0);
     }
+    ASSERT_EQ(e, plusaes::ERROR_OK);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
@@ -31,19 +34,22 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
     const unsigned char (* iv)[16],
     const unsigned char * ok_encrypted, const bool padding) {
 
+    plusaes::Error e;
     const long encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
     std::vector<unsigned char> encrypted(encrypted_size);
-    plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), iv, &encrypted[0], encrypted.size(), padding);
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), iv, &encrypted[0], encrypted.size(), padding);
+    ASSERT_EQ(e, plusaes::ERROR_OK);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
     if (padding) {
-        plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
+        e = plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
     }
     else {
-        plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), 0);
+        e = plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), 0);
     }
+    ASSERT_EQ(e, plusaes::ERROR_OK);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
