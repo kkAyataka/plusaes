@@ -1,0 +1,24 @@
+# automake
+Makefile.in
+
+# autoscan
+/autoscan.log
+/configure.scan
+
+# autoheader
+/config.h.in
+
+# http://www.gnu.org/software/autoconf
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/install-sh
+/missing
+/stamp-h1
+
+# configure
+Makefile
+
