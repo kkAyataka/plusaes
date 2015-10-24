@@ -32,12 +32,12 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
     const unsigned char * ok_encrypted, const bool padding) {
 
     std::vector<unsigned char> encrypted(data.size() + (16 - data.size() % 16));
-    plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), 0, &encrypted[0], encrypted.size(), padding);
+    plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), iv, &encrypted[0], encrypted.size(), padding);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
-    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), 0, &decrypted[0], decrypted.size(), &padded);
+    plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
