@@ -298,12 +298,12 @@ TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
     const std::vector<unsigned char> key = plusaes::key_from_string(&"1234567890123456");
 
     const std::string data =
-    "1,2,3,4,5,6,7,8,9,10\n"
-    "11,12,13,14,15,16,17,18,19,20\n"
-    "21,22,23,24,25,26,27,28,29,30\n"
-    "abcd, efgh, ijkl, mnop, qrst, uvwx, yz\n"
-    "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
-    "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
+        "1,2,3,4,5,6,7,8,9,10\n"
+        "11,12,13,14,15,16,17,18,19,20\n"
+        "21,22,23,24,25,26,27,28,29,30\n"
+        "abcd, efgh, ijkl, mnop, qrst, uvwx, yz\n"
+        "ABCD, EFGH, IJKL, MNOP, QRST, UVWX, YZ\n"
+        "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
 
     test_encrypt_decrypt_cbc(data, key, 0, ok_encrypted, true);
 }
