@@ -321,16 +321,6 @@ bool is_valid_key_size(const unsigned long key_size) {
     }
 }
 
-bool is_valid_encrypted_size(const unsigned long data_size, const unsigned long buf_size, const bool pads) {
-    if (pads) {
-        const unsigned long padding_size = detail::kStateSize - (data_size % detail::kStateSize);
-        return buf_size >= (data_size + padding_size);
-    }
-    else {
-        return buf_size >= data_size;
-    }
-}
-
 } // namespace detail
 
 /** Version number of plusaes. */
@@ -378,10 +368,17 @@ Error check_encrypt_cond(
     }
 
     // check encrypted buffer size
-    if (!detail::is_valid_encrypted_size(data_size, encrypted_size, pads)) {
-        return ERROR_INVALID_BUFFER_SIZE;
+    if (pads) {
+        const unsigned long padding_size = detail::kStateSize - (data_size % detail::kStateSize);
+        if (encrypted_size < (data_size + padding_size)) {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
     }
-
+    else {
+        if (encrypted_size < data_size) {
+            return ERROR_INVALID_BUFFER_SIZE;
+        }
+    }
     return ERROR_OK;
 }
 
