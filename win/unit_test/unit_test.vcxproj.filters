@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{bf6bd4a2-ae25-4893-ae1d-fed9c2eeb90f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{c9c36db9-070c-455f-bf0d-810c211e484f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\plusaes">
+      <UniqueIdentifier>{c3cff6dc-c372-4146-b8d2-7e5d7a50ad37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\_include">
+      <UniqueIdentifier>{d27f2fc9-0d33-4d1b-a933-f91beb5fa518}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\_include\gtest">
+      <UniqueIdentifier>{33653e0d-cd9e-46b7-9d60-517e9dbe7959}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\plusaes\plusaes.hpp">
+      <Filter>lib\plusaes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\unit_test\_include\gtest\gtest.h">
+      <Filter>src\_include\gtest</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\unit_test\_include\gtest\gtest-all.cc">
+      <Filter>src\_include\gtest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\test-plusaes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\unit_test\_include\gtest\gtest_main.cc">
+      <Filter>src\_include\gtest</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

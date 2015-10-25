@@ -1,0 +1,33 @@
+# autoscan
+/autoscan.log
+/configure.scan
+
+# autoheader
+/config.h.in
+
+# aclocal
+/aclocal.m4
+/autom4te.cache
+
+# automake
+Makefile.in
+/depcomp
+/install-sh
+/missing
+
+# autoconf
+/configure
+
+# configure
+Makefile
+.deps
+/config.h
+/config.log
+/config.status
+/stamp-h1
+
+# make
+*.o
+/config.h.in~
+/unit_test/unit_test
+
