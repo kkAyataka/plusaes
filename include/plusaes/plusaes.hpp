@@ -347,7 +347,8 @@ typedef enum {
     ERROR_OK = 0,
     ERROR_INVALID_DATA_SIZE,
     ERROR_INVALID_KEY_SIZE,
-    ERROR_INVALID_BUFFER_SIZE
+    ERROR_INVALID_BUFFER_SIZE,
+    ERROR_INVALID_KEY
 } Error;
 
 namespace detail {
@@ -411,6 +412,20 @@ Error check_decrypt_cond(
     }
 
     return ERROR_OK;
+}
+
+bool check_padding(const unsigned long padding, const unsigned char data[kStateSize]) {
+    if (padding > kStateSize) {
+        return false;
+    }
+
+    for (int i = 0; i < padding; ++i) {
+        if (data[kStateSize - 1 - i] != padding) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 } // namespace detail
@@ -505,7 +520,11 @@ inline Error decrypt_ecb(
     if (padded_size) {
         *padded_size = last[detail::kStateSize - 1];
         const unsigned long cs = detail::kStateSize - *padded_size;
-        if (decrypted_size >= (bc * detail::kStateSize) + cs) {
+
+        if (!detail::check_padding(*padded_size, last)) {
+            return ERROR_INVALID_KEY;
+        }
+        else if (decrypted_size >= (bc * detail::kStateSize) + cs) {
             memcpy(decrypted + (bc * detail::kStateSize), last, cs);
         }
         else {
@@ -637,7 +656,11 @@ inline Error decrypt_cbc(
     if (padded_size) {
         *padded_size = last[detail::kStateSize - 1];
         const unsigned long cs = detail::kStateSize - *padded_size;
-        if (decrypted_size >= (bc * detail::kStateSize) + cs) {
+
+        if (!detail::check_padding(*padded_size, last)) {
+            return ERROR_INVALID_KEY;
+        }
+        else if (decrypted_size >= (bc * detail::kStateSize) + cs) {
             memcpy(decrypted + (bc * detail::kStateSize), last, cs);
         }
         else {
