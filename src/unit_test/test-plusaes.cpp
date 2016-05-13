@@ -376,6 +376,29 @@ TEST(AES, invalid_key_size) {
     ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
 }
 
+TEST(AES, invalid_key)
+{
+    const std::string data = "0123456789ABCDEF";
+    const std::vector<unsigned char> ekey = plusaes::key_from_string(&"0123456789ABCDEF");
+    const std::vector<unsigned char> dkey = plusaes::key_from_string(&"@123456789ABCDEF");
+
+    unsigned char encrypted[32] = {};
+    unsigned char decrypted[32] = {};
+
+    plusaes::Error e;
+    unsigned long padding = 0;
+
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &ekey[0], ekey.size(), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_OK);
+    e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), &dkey[0], dkey.size(), decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY);
+
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &ekey[0], ekey.size(), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::ERROR_OK);
+    e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), &dkey[0], dkey.size(), 0, decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY);
+}
+
 TEST(AES, invalid_data_size) {
     const std::string data = "0123456789ABCDEF1";
     const unsigned char key[16] = {};
