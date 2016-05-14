@@ -343,12 +343,13 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
     return detail::key_from_string<33>(key_str);
 }
 
+/** Error code */
 typedef enum {
-    ERROR_OK = 0,
-    ERROR_INVALID_DATA_SIZE,
-    ERROR_INVALID_KEY_SIZE,
-    ERROR_INVALID_BUFFER_SIZE,
-    ERROR_INVALID_KEY
+    kErrorOk = 0,
+    kErrorInvalidDataSize = 1,
+    kErrorInvalidKeySize,
+    kErrorInvalidBufferSize,
+    kErrorInvalidKey
 } Error;
 
 namespace detail {
@@ -360,27 +361,27 @@ Error check_encrypt_cond(
     const bool pads) {
     // check data size
     if (!pads && (data_size % kStateSize != 0)) {
-        return ERROR_INVALID_DATA_SIZE;
+        return kErrorInvalidDataSize;
     }
 
     // check key size
     if (!detail::is_valid_key_size(key_size)) {
-        return ERROR_INVALID_KEY_SIZE;
+        return kErrorInvalidKeySize;
     }
 
     // check encrypted buffer size
     if (pads) {
         const unsigned long padding_size = detail::kStateSize - (data_size % detail::kStateSize);
         if (encrypted_size < (data_size + padding_size)) {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
     else {
         if (encrypted_size < data_size) {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 Error check_decrypt_cond(
@@ -391,27 +392,27 @@ Error check_decrypt_cond(
     ) {
     // check data size
     if (data_size % 16 != 0) {
-        return ERROR_INVALID_DATA_SIZE;
+        return kErrorInvalidDataSize;
     }
 
     // check key size
     if (!detail::is_valid_key_size(key_size)) {
-        return ERROR_INVALID_KEY_SIZE;
+        return kErrorInvalidKeySize;
     }
 
     // check decrypted buffer size
     if (!padded_size) {
         if (decrypted_size < data_size) {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
     else {
         if (decrypted_size < (data_size - kStateSize)) {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
 
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 bool check_padding(const unsigned long padding, const unsigned char data[kStateSize]) {
@@ -455,7 +456,7 @@ inline Error encrypt_ecb(
     const bool pads
     ) {
     const Error e = detail::check_encrypt_cond(data_size, key_size, encrypted_size, pads);
-    if (e != ERROR_OK) {
+    if (e != kErrorOk) {
         return e;
     }
 
@@ -477,7 +478,7 @@ inline Error encrypt_ecb(
         memcpy(encrypted + (data_size - rem), &ob[0], detail::kStateSize);
     }
 
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 /**
@@ -503,7 +504,7 @@ inline Error decrypt_ecb(
     unsigned long * padded_size
     ) {
     const Error e = detail::check_decrypt_cond(data_size, key_size, decrypted_size, padded_size);
-    if (e != ERROR_OK) {
+    if (e != kErrorOk) {
         return e;
     }
 
@@ -522,20 +523,20 @@ inline Error decrypt_ecb(
         const unsigned long cs = detail::kStateSize - *padded_size;
 
         if (!detail::check_padding(*padded_size, last)) {
-            return ERROR_INVALID_KEY;
+            return kErrorInvalidKey;
         }
         else if (decrypted_size >= (bc * detail::kStateSize) + cs) {
             memcpy(decrypted + (bc * detail::kStateSize), last, cs);
         }
         else {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
     }
 
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 /**
@@ -565,7 +566,7 @@ inline Error encrypt_cbc(
     const bool pads
     ) {
     const Error e = detail::check_encrypt_cond(data_size, key_size, encrypted_size, pads);
-    if (e != ERROR_OK) {
+    if (e != kErrorOk) {
         return e;
     }
 
@@ -602,7 +603,7 @@ inline Error encrypt_cbc(
         memcpy(encrypted + (data_size - rem), &ob[0], detail::kStateSize);
     }
 
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 /**
@@ -630,7 +631,7 @@ inline Error decrypt_cbc(
     unsigned long * padded_size
     ) {
     const Error e = detail::check_decrypt_cond(data_size, key_size, decrypted_size, padded_size);
-    if (e != ERROR_OK) {
+    if (e != kErrorOk) {
         return e;
     }
 
@@ -658,20 +659,20 @@ inline Error decrypt_cbc(
         const unsigned long cs = detail::kStateSize - *padded_size;
 
         if (!detail::check_padding(*padded_size, last)) {
-            return ERROR_INVALID_KEY;
+            return kErrorInvalidKey;
         }
         else if (decrypted_size >= (bc * detail::kStateSize) + cs) {
             memcpy(decrypted + (bc * detail::kStateSize), last, cs);
         }
         else {
-            return ERROR_INVALID_BUFFER_SIZE;
+            return kErrorInvalidBufferSize;
         }
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
     }
 
-    return ERROR_OK;
+    return kErrorOk;
 }
 
 } // namespace plusaes
