@@ -582,7 +582,7 @@ inline Error encrypt_cbc(
 
     const unsigned long bc = data_size / detail::kStateSize;
     for (unsigned long i = 1; i < bc; ++i) {
-        const int offset = i * detail::kStateSize;
+        const long offset = i * detail::kStateSize;
         memcpy(s, data + offset, detail::kStateSize);
         detail::xor_data(s, encrypted + offset - detail::kStateSize);
 
@@ -644,7 +644,7 @@ inline Error decrypt_cbc(
 
     const unsigned long bc = data_size / detail::kStateSize - 1;
     for (unsigned long i = 1; i < bc; ++i) {
-        const int offset = i * detail::kStateSize;
+        const long offset = i * detail::kStateSize;
         detail::decrypt_state(rkeys, data + offset, decrypted + offset);
         detail::xor_data(decrypted + offset, data + offset - detail::kStateSize);
     }
