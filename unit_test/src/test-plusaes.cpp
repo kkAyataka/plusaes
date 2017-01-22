@@ -47,7 +47,7 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
         e = plusaes::decrypt_cbc(&encrypted[0], (unsigned long)encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], (unsigned long)decrypted.size(), &padded);
     }
     else {
-        e = plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], (unsigned long)decrypted.size(), 0);
+        e = plusaes::decrypt_cbc(&encrypted[0], (unsigned long)encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], (unsigned long)decrypted.size(), 0);
     }
     ASSERT_EQ(e, plusaes::kErrorOk);
 
