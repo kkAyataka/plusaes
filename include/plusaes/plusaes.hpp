@@ -419,7 +419,7 @@ bool check_padding(const unsigned long padding, const unsigned char data[kStateS
         return false;
     }
 
-    for (int i = 0; i < padding; ++i) {
+    for (unsigned long i = 0; i < padding; ++i) {
         if (data[kStateSize - 1 - i] != padding) {
             return false;
         }
@@ -462,7 +462,7 @@ inline Error encrypt_ecb(
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
 
     const unsigned long bc = data_size / detail::kStateSize;
-    for (int i = 0; i < bc; ++i) {
+    for (unsigned long i = 0; i < bc; ++i) {
         detail::encrypt_state(rkeys, data + (i * detail::kStateSize), encrypted + (i * detail::kStateSize));
     }
 
@@ -510,7 +510,7 @@ inline Error decrypt_ecb(
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
 
     const unsigned long bc = data_size / detail::kStateSize - 1;
-    for (int i = 0; i < bc; ++i) {
+    for (unsigned long i = 0; i < bc; ++i) {
         detail::decrypt_state(rkeys, data + (i * detail::kStateSize), decrypted + (i * detail::kStateSize));
     }
 
@@ -581,7 +581,7 @@ inline Error encrypt_cbc(
     detail::encrypt_state(rkeys, s, encrypted);
 
     const unsigned long bc = data_size / detail::kStateSize;
-    for (int i = 1; i < bc; ++i) {
+    for (unsigned long i = 1; i < bc; ++i) {
         const int offset = i * detail::kStateSize;
         memcpy(s, data + offset, detail::kStateSize);
         detail::xor_data(s, encrypted + offset - detail::kStateSize);
@@ -643,7 +643,7 @@ inline Error decrypt_cbc(
     }
 
     const unsigned long bc = data_size / detail::kStateSize - 1;
-    for (int i = 1; i < bc; ++i) {
+    for (unsigned long i = 1; i < bc; ++i) {
         const int offset = i * detail::kStateSize;
         detail::decrypt_state(rkeys, data + offset, decrypted + offset);
         detail::xor_data(decrypted + offset, data + offset - detail::kStateSize);
