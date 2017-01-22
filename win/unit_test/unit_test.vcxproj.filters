@@ -7,33 +7,33 @@
     <Filter Include="lib">
       <UniqueIdentifier>{c9c36db9-070c-455f-bf0d-810c211e484f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lib\plusaes">
+    <Filter Include="lib\include">
+      <UniqueIdentifier>{9d4d8edb-d6c8-4e3d-8681-9e598d5f1155}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\include\plusaes">
       <UniqueIdentifier>{c3cff6dc-c372-4146-b8d2-7e5d7a50ad37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\_include">
-      <UniqueIdentifier>{d27f2fc9-0d33-4d1b-a933-f91beb5fa518}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\_include\gtest">
-      <UniqueIdentifier>{33653e0d-cd9e-46b7-9d60-517e9dbe7959}</UniqueIdentifier>
+    <Filter Include="lib\include\gtest">
+      <UniqueIdentifier>{c40ce8e7-3c90-418a-b3dc-f3bd3ce49227}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\plusaes\plusaes.hpp">
-      <Filter>lib\plusaes</Filter>
+      <Filter>lib\include\plusaes</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\unit_test\_include\gtest\gtest.h">
-      <Filter>src\_include\gtest</Filter>
+    <ClInclude Include="..\..\unit_test\lib\include\gtest\gtest.h">
+      <Filter>lib\include\gtest</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\unit_test\_include\gtest\gtest-all.cc">
-      <Filter>src\_include\gtest</Filter>
+    <ClCompile Include="..\..\unit_test\lib\include\gtest\gtest_main.cc">
+      <Filter>lib\include\gtest</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\unit_test\test-plusaes.cpp">
+    <ClCompile Include="..\..\unit_test\lib\include\gtest\gtest-all.cc">
+      <Filter>lib\include\gtest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\unit_test\src\test-plusaes.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\unit_test\_include\gtest\gtest_main.cc">
-      <Filter>src\_include\gtest</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
