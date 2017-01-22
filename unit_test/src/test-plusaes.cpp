@@ -58,7 +58,7 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
 } // no namespace
 
 TEST(AES, version) {
-    ASSERT_EQ(plusaes::version(), 0x00000100);
+    ASSERT_EQ(plusaes::version(), 0x00090000);
 }
 
 TEST(AES, sbox) {
