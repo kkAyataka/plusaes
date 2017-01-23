@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		004FC8F71BC5E25C005D4DD3 /* gtest-all.cc in Sources */ = {isa = PBXBuildFile; fileRef = 004FC8F31BC5E25C005D4DD3 /* gtest-all.cc */; settings = {ASSET_TAGS = (); }; };
-		004FC8F81BC5E25C005D4DD3 /* gtest_main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 004FC8F51BC5E25C005D4DD3 /* gtest_main.cc */; settings = {ASSET_TAGS = (); }; };
-		004FC8F91BC5E25C005D4DD3 /* test-plusaes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 004FC8F61BC5E25C005D4DD3 /* test-plusaes.cpp */; settings = {ASSET_TAGS = (); }; };
+		00960BD41E343CF200419AC1 /* gtest_main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 00960BD31E343CE700419AC1 /* gtest_main.cc */; };
+		00960BD71E343D1700419AC1 /* test-plusaes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00960BD61E343D0E00419AC1 /* test-plusaes.cpp */; };
+		00960BD81E343DC000419AC1 /* gtest-all.cc in Sources */ = {isa = PBXBuildFile; fileRef = 00960BD11E343CE700419AC1 /* gtest-all.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,11 +26,11 @@
 
 /* Begin PBXFileReference section */
 		004FC8EA1BC5E222005D4DD3 /* unit_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = unit_test; sourceTree = BUILT_PRODUCTS_DIR; };
-		004FC8F31BC5E25C005D4DD3 /* gtest-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "gtest-all.cc"; sourceTree = "<group>"; };
-		004FC8F41BC5E25C005D4DD3 /* gtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gtest.h; sourceTree = "<group>"; };
-		004FC8F51BC5E25C005D4DD3 /* gtest_main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gtest_main.cc; sourceTree = "<group>"; };
-		004FC8F61BC5E25C005D4DD3 /* test-plusaes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "test-plusaes.cpp"; path = "../../src/unit_test/test-plusaes.cpp"; sourceTree = "<group>"; };
 		004FC8FA1BC5E37C005D4DD3 /* plusaes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = plusaes.hpp; path = ../include/plusaes/plusaes.hpp; sourceTree = "<group>"; };
+		00960BD11E343CE700419AC1 /* gtest-all.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "gtest-all.cc"; sourceTree = "<group>"; };
+		00960BD21E343CE700419AC1 /* gtest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gtest.h; sourceTree = "<group>"; };
+		00960BD31E343CE700419AC1 /* gtest_main.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gtest_main.cc; sourceTree = "<group>"; };
+		00960BD61E343D0E00419AC1 /* test-plusaes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "test-plusaes.cpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,29 +64,10 @@
 		004FC8EB1BC5E222005D4DD3 /* unit_test */ = {
 			isa = PBXGroup;
 			children = (
-				004FC8F11BC5E25C005D4DD3 /* _include */,
-				004FC8F61BC5E25C005D4DD3 /* test-plusaes.cpp */,
+				00960BCE1E343CE700419AC1 /* lib */,
+				00960BD51E343D0E00419AC1 /* src */,
 			);
 			path = unit_test;
-			sourceTree = "<group>";
-		};
-		004FC8F11BC5E25C005D4DD3 /* _include */ = {
-			isa = PBXGroup;
-			children = (
-				004FC8F21BC5E25C005D4DD3 /* gtest */,
-			);
-			name = _include;
-			path = ../../src/unit_test/_include;
-			sourceTree = "<group>";
-		};
-		004FC8F21BC5E25C005D4DD3 /* gtest */ = {
-			isa = PBXGroup;
-			children = (
-				004FC8F31BC5E25C005D4DD3 /* gtest-all.cc */,
-				004FC8F41BC5E25C005D4DD3 /* gtest.h */,
-				004FC8F51BC5E25C005D4DD3 /* gtest_main.cc */,
-			);
-			path = gtest;
 			sourceTree = "<group>";
 		};
 		004FC8FB1BC5E387005D4DD3 /* include */ = {
@@ -103,6 +84,42 @@
 				004FC8FA1BC5E37C005D4DD3 /* plusaes.hpp */,
 			);
 			name = plusaes;
+			sourceTree = "<group>";
+		};
+		00960BCE1E343CE700419AC1 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				00960BCF1E343CE700419AC1 /* include */,
+			);
+			name = lib;
+			path = ../../unit_test/lib;
+			sourceTree = "<group>";
+		};
+		00960BCF1E343CE700419AC1 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				00960BD01E343CE700419AC1 /* gtest */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		00960BD01E343CE700419AC1 /* gtest */ = {
+			isa = PBXGroup;
+			children = (
+				00960BD11E343CE700419AC1 /* gtest-all.cc */,
+				00960BD21E343CE700419AC1 /* gtest.h */,
+				00960BD31E343CE700419AC1 /* gtest_main.cc */,
+			);
+			path = gtest;
+			sourceTree = "<group>";
+		};
+		00960BD51E343D0E00419AC1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				00960BD61E343D0E00419AC1 /* test-plusaes.cpp */,
+			);
+			name = src;
+			path = ../../unit_test/src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,9 +178,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				004FC8F81BC5E25C005D4DD3 /* gtest_main.cc in Sources */,
-				004FC8F71BC5E25C005D4DD3 /* gtest-all.cc in Sources */,
-				004FC8F91BC5E25C005D4DD3 /* test-plusaes.cpp in Sources */,
+				00960BD41E343CF200419AC1 /* gtest_main.cc in Sources */,
+				00960BD71E343D1700419AC1 /* test-plusaes.cpp in Sources */,
+				00960BD81E343DC000419AC1 /* gtest-all.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +268,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../include ../src/unit_test/_include";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../include\" \"$(SRCROOT)/../unit_test/lib/include\"";
 			};
 			name = Debug;
 		};
@@ -259,7 +276,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../include ../src/unit_test/_include";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../include\" \"$(SRCROOT)/../unit_test/lib/include\"";
 			};
 			name = Release;
 		};
@@ -282,6 +299,7 @@
 				004FC8F01BC5E222005D4DD3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

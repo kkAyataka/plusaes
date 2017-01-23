@@ -1,5 +1,4 @@
-_Debug
-_Release
+build
 ipch
 *.user
 *.opensdf

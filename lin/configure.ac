@@ -6,7 +6,9 @@ AC_INIT([plusaes], [0.0.1], [kk.ayataka@gmail.com])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_HEADER([config.h])
 
+
 # Checks for programs.
+${CXXFLAGS="-O2"}
 AC_PROG_CC
 AC_PROG_CXX
 

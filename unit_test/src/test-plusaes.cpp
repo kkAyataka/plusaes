@@ -10,21 +10,21 @@ void test_encrypt_decrypt_ecb(const std::string & data, const std::vector<unsign
     const unsigned char * ok_encrypted, const bool padding) {
 
     plusaes::Error e;
-    const long encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
+    const std::size_t encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
     std::vector<unsigned char> encrypted(encrypted_size);
-    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), &encrypted[0], encrypted.size(), padding);
-    ASSERT_EQ(e, plusaes::ERROR_OK);
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), (unsigned long)data.size(), &key[0], (int)key.size(), &encrypted[0], (unsigned long)encrypted.size(), padding);
+    ASSERT_EQ(e, plusaes::kErrorOk);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
     if (padding) {
-        e = plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), &padded);
+        e = plusaes::decrypt_ecb(encrypted.data(), (unsigned long)encrypted.size(), &key[0], (int)key.size(), &decrypted[0], (unsigned long)decrypted.size(), &padded);
     }
     else {
-        e = plusaes::decrypt_ecb(encrypted.data(), encrypted.size(), &key[0], (int)key.size(), &decrypted[0], decrypted.size(), 0);
+        e = plusaes::decrypt_ecb(encrypted.data(), (unsigned long)encrypted.size(), &key[0], (int)key.size(), &decrypted[0], (unsigned long)decrypted.size(), 0);
     }
-    ASSERT_EQ(e, plusaes::ERROR_OK);
+    ASSERT_EQ(e, plusaes::kErrorOk);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
@@ -35,21 +35,21 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
     const unsigned char * ok_encrypted, const bool padding) {
 
     plusaes::Error e;
-    const long encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
+    const std::size_t encrypted_size = (padding) ? data.size() + (16 - data.size() % 16) : data.size();
     std::vector<unsigned char> encrypted(encrypted_size);
-    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), &key[0], (int)key.size(), iv, &encrypted[0], encrypted.size(), padding);
-    ASSERT_EQ(e, plusaes::ERROR_OK);
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), (unsigned long)data.size(), &key[0], (int)key.size(), iv, &encrypted[0], (unsigned long)encrypted.size(), padding);
+    ASSERT_EQ(e, plusaes::kErrorOk);
     ASSERT_EQ(memcmp(&encrypted[0], ok_encrypted, encrypted.size()), 0);
 
     std::vector<unsigned char> decrypted(encrypted.size());
     unsigned long padded = 0;
     if (padding) {
-        e = plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), &padded);
+        e = plusaes::decrypt_cbc(&encrypted[0], (unsigned long)encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], (unsigned long)decrypted.size(), &padded);
     }
     else {
-        e = plusaes::decrypt_cbc(&encrypted[0], encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], decrypted.size(), 0);
+        e = plusaes::decrypt_cbc(&encrypted[0], (unsigned long)encrypted.size(), &key[0], (int)key.size(), iv, &decrypted[0], (unsigned long)decrypted.size(), 0);
     }
-    ASSERT_EQ(e, plusaes::ERROR_OK);
+    ASSERT_EQ(e, plusaes::kErrorOk);
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
@@ -58,7 +58,7 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
 } // no namespace
 
 TEST(AES, version) {
-    ASSERT_EQ(plusaes::version(), 0x00000100);
+    ASSERT_EQ(plusaes::version(), 0x00090000);
 }
 
 TEST(AES, sbox) {
@@ -138,7 +138,7 @@ TEST(AES, expand_key_128) {
     RoundKeys keys = expand_key(key, sizeof(key));
 
     ASSERT_EQ(keys.size(), 11);
-    for (int i = 0; i < keys.size(); ++i) {
+    for (unsigned int i = 0; i < keys.size(); ++i) {
         ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
@@ -167,7 +167,7 @@ TEST(AES, expand_key_192) {
     RoundKeys keys = expand_key(key, sizeof(key));
 
     ASSERT_EQ(keys.size(), 13);
-    for (int i = 0; i < keys.size(); ++i) {
+    for (unsigned int i = 0; i < keys.size(); ++i) {
         ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
@@ -197,7 +197,7 @@ TEST(AES, expand_key_256) {
     RoundKeys keys = expand_key(key, sizeof(key));
 
     ASSERT_EQ(keys.size(), 15);
-    for (int i = 0; i < keys.size(); ++i) {
+    for (unsigned int i = 0; i < keys.size(); ++i) {
         ASSERT_EQ(memcmp(keys[i].w, ok_keys[i], 16), 0);
     }
 }
@@ -365,15 +365,38 @@ TEST(AES, invalid_key_size) {
     plusaes::Error e;
     unsigned long padding = 0;
 
-    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKeySize);
     e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), key, sizeof(key), decrypted, sizeof(decrypted), &padding);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKeySize);
 
-    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKeySize);
     e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), key, sizeof(key), 0, decrypted, sizeof(decrypted), &padding);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_KEY_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKeySize);
+}
+
+TEST(AES, invalid_key)
+{
+    const std::string data = "0123456789ABCDEF";
+    const std::vector<unsigned char> ekey = plusaes::key_from_string(&"0123456789ABCDEF");
+    const std::vector<unsigned char> dkey = plusaes::key_from_string(&"@123456789ABCDEF");
+
+    unsigned char encrypted[32] = {};
+    unsigned char decrypted[32] = {};
+
+    plusaes::Error e;
+    unsigned long padding = 0;
+
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), (unsigned long)data.size(), &ekey[0], (unsigned long)ekey.size(), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorOk);
+    e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), &dkey[0], (unsigned long)dkey.size(), decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKey);
+
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), (unsigned long)data.size(), &ekey[0], (unsigned long)ekey.size(), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorOk);
+    e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), &dkey[0], (unsigned long)dkey.size(), 0, decrypted, sizeof(decrypted), &padding);
+    ASSERT_EQ(e, plusaes::kErrorInvalidKey);
 }
 
 TEST(AES, invalid_data_size) {
@@ -384,15 +407,15 @@ TEST(AES, invalid_data_size) {
 
     plusaes::Error e;
 
-    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), false);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), encrypted, sizeof(encrypted), false);
+    ASSERT_EQ(e, plusaes::kErrorInvalidDataSize);
     e = plusaes::decrypt_ecb(encrypted, sizeof(encrypted), key, sizeof(key), decrypted, sizeof(decrypted), 0);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidDataSize);
 
-    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), false);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), false);
+    ASSERT_EQ(e, plusaes::kErrorInvalidDataSize);
     e = plusaes::decrypt_cbc(encrypted, sizeof(encrypted), key, sizeof(key), 0, decrypted, sizeof(decrypted), 0);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_DATA_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidDataSize);
 }
 
 TEST(AES, invalid_buffer_size) {
@@ -405,15 +428,15 @@ TEST(AES, invalid_buffer_size) {
     plusaes::Error e;
     unsigned long padding = 0;
 
-    e = plusaes::encrypt_ecb((unsigned char*)data.data(), data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+    e = plusaes::encrypt_ecb((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorInvalidBufferSize);
 
-    e = plusaes::encrypt_cbc((unsigned char*)data.data(), data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+    e = plusaes::encrypt_cbc((unsigned char*)data.data(), (unsigned long)data.size(), key, sizeof(key), 0, encrypted, sizeof(encrypted), true);
+    ASSERT_EQ(e, plusaes::kErrorInvalidBufferSize);
 
     e = plusaes::decrypt_ecb(encrypted2, sizeof(encrypted2), key, sizeof(key), decrypted, sizeof(decrypted), &padding);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidBufferSize);
 
     e = plusaes::decrypt_cbc(encrypted2, sizeof(encrypted2), key, sizeof(key), 0, decrypted, sizeof(decrypted), &padding);
-    ASSERT_EQ(e, plusaes::ERROR_INVALID_BUFFER_SIZE);
+    ASSERT_EQ(e, plusaes::kErrorInvalidBufferSize);
 }
