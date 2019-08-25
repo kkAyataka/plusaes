@@ -488,9 +488,9 @@ inline Error encrypt_ecb(
  * @param [in]  key_size Key size.
  * @param [out] decrypted Decrypted data buffer.
  * @param [in]  decrypted_size Decrypted data buffer size.
- * @param [out] padding_size If this value is 0, this function does not remove padding.
- *  If this value is not 0, this function removes padding by PKCS
- *  and returns padding size using padding_size.
+ * @param [out] padded_size If this value is NULL, this function does not remove padding.
+ *  If this value is not NULL, this function removes padding by PKCS
+ *  and returns padded size using padded_size.
  * @since 1.0.0
  */
 inline Error decrypt_ecb(
@@ -614,9 +614,9 @@ inline Error encrypt_cbc(
  * @param [in]  iv Initialize vector.
  * @param [out] decrypted Decrypted data buffer.
  * @param [in]  decrypted_size Decrypted data buffer size.
- * @param [out] padding_size If this value is 0, this function does not remove padding.
- *  If this value is not 0, this function removes padding by PKCS
- *  and returns padding size using padding_size.
+ * @param [out] padded_size If this value is NULL, this function does not remove padding.
+ *  If this value is not NULL, this function removes padding by PKCS
+ *  and returns padded size using padded_size.
  * @since 1.0.0
  */
 inline Error decrypt_cbc(
