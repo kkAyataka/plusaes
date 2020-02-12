@@ -314,6 +314,19 @@ TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
     test_encrypt_decrypt_cbc(data, key, 0, ok_encrypted, true);
 }
 
+TEST(AES, encrypt_decrypt_cbc_128_key_less_16) {
+    const unsigned char ok_encrypted[] = {
+        0x70, 0x55, 0x1d, 0xbb, 0xe3, 0x19, 0xa3, 0xf6, 0xf6, 0x70, 0xed, 0x80, 0x7f, 0xb2, 0xf1, 0x4e
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEF");
+
+    const std::string data = "small";
+    const unsigned char iv[16] = {};
+
+    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
+}
+
 TEST(AES, encrypt_decrypt_cbc_192_key_mul_16_iv) {
     const unsigned char ok_encrypted[] = {
         0xB7, 0xA6, 0xCE, 0xF6, 0xFE, 0x3F, 0xE2, 0x83, 0xC1, 0xC9, 0xD3, 0x2F, 0xFF, 0xAC, 0x47, 0xC4,
