@@ -36,6 +36,11 @@ void test_encrypt_decrypt_ecb(const std::string & data, const std::vector<unsign
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
+
+    if (padding) {
+        const std::vector<unsigned char> ok_pad(padded);
+        ASSERT_EQ(0, memcmp(&decrypted[decrypted.size() - padded], &ok_pad[0], padded));
+    }
 }
 
 void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsigned char> key,
@@ -61,6 +66,11 @@ void test_encrypt_decrypt_cbc(const std::string & data, const std::vector<unsign
 
     const std::string s(decrypted.begin(), decrypted.end() - padded);
     ASSERT_EQ(data, s);
+
+    if (padding) {
+        const std::vector<unsigned char> ok_pad(padded);
+        ASSERT_EQ(0, memcmp(&decrypted[decrypted.size() - padded], &ok_pad[0], padded));
+    }
 }
 
 } // no namespace

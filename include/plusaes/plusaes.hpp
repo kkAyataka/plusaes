@@ -676,6 +676,7 @@ inline Error decrypt_cbc(
     }
     else {
         memcpy(last, decrypted, data_size);
+        memset(decrypted, 0, decrypted_size);
     }
 
     if (padded_size) {
