@@ -6,6 +6,14 @@ using namespace plusaes::detail;
 
 namespace {
 
+void print_bytes(const unsigned char * bytes, std::size_t bytes_size) {
+    std::cout << std::hex << std::uppercase;
+    for (std::size_t i = 0; i < bytes_size; ++i) {
+        std::cout << "0x" << (int)bytes[i] << ", ";
+    }
+    std::cout << std::endl;
+}
+
 void test_encrypt_decrypt_ecb(const std::string & data, const std::vector<unsigned char> key,
     const unsigned char * ok_encrypted, const bool padding) {
 
@@ -220,6 +228,45 @@ TEST(AES, key_from_string_256) {
     ASSERT_EQ(memcmp(&key[0], key_str, 32), 0);
 }
 
+// ECB
+
+TEST(AES, encrypt_decrypt_ecb_128_key_less_16) {
+    const unsigned char ok_encrypted[] = {
+        0xAE, 0xFC, 0xF8, 0xD0, 0xE4, 0xEA, 0x01, 0x3D, 0x1D, 0xA2, 0x3B, 0x56, 0x19, 0x3B, 0x23, 0xAA
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEF");
+
+    const std::string data = "1z2y3x";
+
+    test_encrypt_decrypt_ecb(data, key, ok_encrypted, true);
+}
+
+TEST(AES, encrypt_decrypt_ecb_256_key_less_16) {
+    const unsigned char ok_encrypted[] = {
+        0x1F, 0x95, 0x92, 0x40, 0xCC, 0x64, 0xC2, 0x67, 0x3D, 0xB1, 0x08, 0xE8, 0xA0, 0xFD, 0x86, 0x68
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEFXXXXXXXXZZZZZZZZ");
+
+    const std::string data = "ABCDEFGHIJ12345"; // 15
+
+    test_encrypt_decrypt_ecb(data, key, ok_encrypted, true);
+}
+
+TEST(AES, encrypt_decrypt_ecb_256_key_16) {
+    const unsigned char ok_encrypted[] = {
+        0x36, 0xCC, 0xF6, 0xDE, 0x1D, 0x1A, 0x50, 0xB7, 0x93, 0xE6, 0xDC, 0xFC, 0x24, 0x80, 0x8D, 0x3B,
+        0xDD, 0x8E, 0x2A, 0xF1, 0xAC, 0x62, 0xAF, 0xFA, 0xDF, 0x44, 0x4F, 0x3C, 0xAA, 0xFE, 0x94, 0xAF
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEFXXXXXXXXZZZZZZZZ");
+
+    const std::string data = "ABCDEFGHIJ123456"; // 16
+
+    test_encrypt_decrypt_ecb(data, key, ok_encrypted, true);
+}
+
 TEST(AES, encrypt_decrypt_ecb_128_key_not_mul_16) {
     const unsigned char ok_encrypted[] = {
         0xAF, 0xA4, 0xFD, 0xE8, 0x0D, 0xFA, 0xE7, 0x37, 0x46, 0x98, 0xED, 0xA4, 0xEE, 0x44, 0x26, 0x8B,
@@ -284,6 +331,60 @@ TEST(AES, encrypt_decrypt_ecb_256_key_mul_16) {
     test_encrypt_decrypt_ecb(data, key, ok_encrypted, false);
 }
 
+// CBC
+
+TEST(AES, encrypt_decrypt_cbc_128_key_less_16_no_iv) {
+    const unsigned char ok_encrypted[] = {
+        0x70, 0x55, 0x1d, 0xbb, 0xe3, 0x19, 0xa3, 0xf6, 0xf6, 0x70, 0xed, 0x80, 0x7f, 0xb2, 0xf1, 0x4e
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEF");
+
+    const std::string data = "small";
+
+    test_encrypt_decrypt_cbc(data, key, 0, ok_encrypted, true);
+}
+
+TEST(AES, encrypt_decrypt_cbc_192_key_less_16) {
+    const unsigned char ok_encrypted[] = {
+        0x44, 0xd4, 0x9f, 0xd7, 0xfe, 0xcc, 0x81, 0x09, 0x32, 0x9e, 0x3f, 0xd1, 0x8e, 0xe6, 0xc1, 0xc9
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEFXXXXXXXX");
+
+    const std::string data = "1z2y3x";
+    const unsigned char iv[16] = {0x01, 0x02, 0x03, 0xAA, 0xBB};
+
+    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
+}
+
+TEST(AES, encrypt_decrypt_cbc_256_key_less_16) {
+    const unsigned char ok_encrypted[] = {
+        0x43, 0x9E, 0xDC, 0x97, 0xEB, 0xD8, 0xC3, 0x0D, 0xBC, 0x51, 0xA9, 0x3E, 0x71, 0xE5, 0x22, 0x46,
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEFXXXXXXXXZZZZZZZZ");
+
+    const std::string data = "ABCDEFGHIJ12345"; // 15
+    const unsigned char iv[16] = {0x01, 0x02, 0x03, 0xAA, 0xBB, 0x05, 0x11, 0x21, 0x88, 0x92, 0xA9, 0x62, 0x77, 0x5B, 0x4F, 0x44};
+
+    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
+}
+
+TEST(AES, encrypt_decrypt_cbc_256_key_16) {
+    const unsigned char ok_encrypted[] = {
+        0xF7, 0x0B, 0x80, 0x66, 0xCC, 0xB5, 0xA5, 0xE7, 0x67, 0x5D, 0x12, 0x54, 0x1A, 0x60, 0x76, 0xEA,
+        0x37, 0x3B, 0xC8, 0x6D, 0x79, 0xB9, 0xE6, 0xD0, 0xEE, 0xFE, 0xBD, 0x9F, 0xFC, 0xC5, 0x43, 0x71
+    };
+
+    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEFXXXXXXXXZZZZZZZZ");
+
+    const std::string data = "ABCDEFGHIJ123456"; // 16
+    const unsigned char iv[16] = {0x01, 0x02, 0x03, 0xAA, 0xBB, 0x05, 0x11, 0x21, 0x88, 0x92, 0xA9, 0x62, 0x77, 0x5B, 0x4F, 0x44};
+
+    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
+}
+
 TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
     const unsigned char ok_encrypted[] = {
         0xAF, 0xA4, 0xFD, 0xE8, 0x0D, 0xFA, 0xE7, 0x37, 0x46, 0x98, 0xED, 0xA4, 0xEE, 0x44, 0x26, 0x8B,
@@ -312,19 +413,6 @@ TEST(AES, encrypt_decrypt_cbc_128_key_not_mul_16_no_iv) {
         "!\"#$%&'()0=~|`{}+*_?><./_]:;@[¥^-]`'\"\n";
 
     test_encrypt_decrypt_cbc(data, key, 0, ok_encrypted, true);
-}
-
-TEST(AES, encrypt_decrypt_cbc_128_key_less_16) {
-    const unsigned char ok_encrypted[] = {
-        0x70, 0x55, 0x1d, 0xbb, 0xe3, 0x19, 0xa3, 0xf6, 0xf6, 0x70, 0xed, 0x80, 0x7f, 0xb2, 0xf1, 0x4e
-    };
-
-    const std::vector<unsigned char> key = plusaes::key_from_string(&"0123456789ABCDEF");
-
-    const std::string data = "small";
-    const unsigned char iv[16] = {};
-
-    test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
 }
 
 TEST(AES, encrypt_decrypt_cbc_192_key_mul_16_iv) {
@@ -368,6 +456,8 @@ TEST(AES, encrypt_decrypt_cbc_256_key_not_mul_16_iv) {
 
     test_encrypt_decrypt_cbc(data, key, &iv, ok_encrypted, true);
 }
+
+// Invalid
 
 TEST(AES, invalid_key_size) {
     const std::string data = "0123456789ABCDEF";
