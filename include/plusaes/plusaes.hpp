@@ -594,12 +594,12 @@ inline Error encrypt_cbc(
         memset(s, pad_v, detail::kStateSize);
         memcpy(s, data, data_size);
     }
-
     if (iv) {
         detail::xor_data(s, *iv);
     }
     detail::encrypt_state(rkeys, s, encrypted);
 
+    // encrypt mid
     const unsigned long bc = data_size / detail::kStateSize;
     for (unsigned long i = 1; i < bc; ++i) {
         const long offset = i * detail::kStateSize;
@@ -609,6 +609,7 @@ inline Error encrypt_cbc(
         detail::encrypt_state(rkeys, s, encrypted + offset);
     }
 
+    // enctypt last
     if (pads && ge16) {
         std::vector<unsigned char> ib(detail::kStateSize, pad_v), ob(detail::kStateSize);
         memcpy(&ib[0], data + data_size - rem, rem);
@@ -659,6 +660,7 @@ inline Error decrypt_cbc(
         detail::xor_data(decrypted, *iv);
     }
 
+    // decrypt mid
     const unsigned long bc = data_size / detail::kStateSize - 1;
     for (unsigned long i = 1; i < bc; ++i) {
         const long offset = i * detail::kStateSize;
@@ -666,6 +668,7 @@ inline Error decrypt_cbc(
         detail::xor_data(decrypted + offset, data + offset - detail::kStateSize);
     }
 
+    // decrypt last
     unsigned char last[detail::kStateSize] = {};
     if (data_size > detail::kStateSize) {
         detail::decrypt_state(rkeys, data + (bc * detail::kStateSize), last);
