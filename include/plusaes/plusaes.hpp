@@ -272,8 +272,8 @@ inline void xor_data(unsigned char data[kStateSize], const unsigned char v[kStat
     }
 }
 
-/* increment counter (128-bit int) by 1 */
-static void incr_counter(unsigned char counter[kStateSize]) {
+/** increment counter (128-bit int) by 1 */
+inline void incr_counter(unsigned char counter[kStateSize]) {
     unsigned n = kStateSize, c = 1;
     do {
         --n;
@@ -407,32 +407,26 @@ Error check_decrypt_cond(
     const unsigned long data_size,
     const unsigned long key_size,
     const unsigned long decrypted_size,
-    const unsigned long *padded_size)
-{
+    const unsigned long * padded_size
+    ) {
     // check data size
-    if (data_size % 16 != 0)
-    {
+    if (data_size % 16 != 0) {
         return kErrorInvalidDataSize;
     }
 
     // check key size
-    if (!detail::is_valid_key_size(key_size))
-    {
+    if (!detail::is_valid_key_size(key_size)) {
         return kErrorInvalidKeySize;
     }
 
     // check decrypted buffer size
-    if (!padded_size)
-    {
-        if (decrypted_size < data_size)
-        {
+    if (!padded_size) {
+        if (decrypted_size < data_size) {
             return kErrorInvalidBufferSize;
         }
     }
-    else
-    {
-        if (decrypted_size < (data_size - kStateSize))
-        {
+    else {
+        if (decrypted_size < (data_size - kStateSize)) {
             return kErrorInvalidBufferSize;
         }
     }
@@ -440,8 +434,7 @@ Error check_decrypt_cond(
     return kErrorOk;
 }
 
-bool check_padding(const unsigned long padding, const unsigned char data[kStateSize])
-{
+bool check_padding(const unsigned long padding, const unsigned char data[kStateSize]) {
     if (padding > kStateSize) {
         return false;
     }
@@ -720,13 +713,16 @@ inline Error decrypt_cbc(
 }
 
 /**
+ * @note
+ * This is BETA API. I might change API in the future.
+ *
  * Encrypts or decrypt data in-place with CTR mode.
- * @param [in/out]  data Data.
- * @param [in/out]  data_size Data size.
+ * @param [in,out]  data Data.
+ * @param [in,out]  data_size Data size.
  * @param [in]  key key bytes. The key length must be 16 (128-bit), 24 (192-bit) or 32 (256-bit).
  * @param [in]  key_size key size.
  * @param [in]  nonce 16 bytes.
- * @since 1.0.0+
+ * @since 1.0.0
  */
 inline Error crypt_ctr(
     unsigned char *data,
