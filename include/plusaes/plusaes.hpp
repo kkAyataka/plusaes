@@ -272,6 +272,17 @@ inline void xor_data(unsigned char data[kStateSize], const unsigned char v[kStat
     }
 }
 
+/** increment counter (128-bit int) by 1 */
+inline void incr_counter(unsigned char counter[kStateSize]) {
+    unsigned n = kStateSize, c = 1;
+    do {
+        --n;
+        c += counter[n];
+        counter[n] = c;
+        c >>= 8;
+    } while (n);
+}
+
 inline void encrypt_state(const RoundKeys &rkeys, const unsigned char data[16], unsigned char encrypted[16]) {
     State s;
     copy_bytes_to_state(data, s);
@@ -356,7 +367,8 @@ typedef enum {
     kErrorInvalidDataSize = 1,
     kErrorInvalidKeySize,
     kErrorInvalidBufferSize,
-    kErrorInvalidKey
+    kErrorInvalidKey,
+    kErrorInvalidNonceSize
 } Error;
 
 namespace detail {
@@ -695,6 +707,48 @@ inline Error decrypt_cbc(
     }
     else {
         memcpy(decrypted + (bc * detail::kStateSize), last, sizeof(last));
+    }
+
+    return kErrorOk;
+}
+
+/**
+ * @note
+ * This is BETA API. I might change API in the future.
+ *
+ * Encrypts or decrypt data in-place with CTR mode.
+ * @param [in,out]  data Data.
+ * @param [in,out]  data_size Data size.
+ * @param [in]  key key bytes. The key length must be 16 (128-bit), 24 (192-bit) or 32 (256-bit).
+ * @param [in]  key_size key size.
+ * @param [in]  nonce 16 bytes.
+ * @since 1.0.0
+ */
+inline Error crypt_ctr(
+    unsigned char *data,
+    unsigned long data_size,
+    const unsigned char *key,
+    const unsigned long key_size,
+    const unsigned char *nonce,
+    const unsigned long nonce_size
+) {
+    if (nonce_size > detail::kStateSize) return kErrorInvalidNonceSize;
+    if (!detail::is_valid_key_size(key_size)) return kErrorInvalidKeySize;
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+
+    unsigned long pos = 0;
+    unsigned long blkpos = detail::kStateSize;
+    unsigned char blk[detail::kStateSize];
+    unsigned char counter[detail::kStateSize] = {};
+    memcpy(counter, nonce, nonce_size);
+
+    while (pos < data_size) {
+        if (blkpos == detail::kStateSize) {
+            detail::encrypt_state(rkeys, counter, blk);
+            detail::incr_counter(counter);
+            blkpos = 0;
+        }
+        data[pos++] ^= blk[blkpos++];
     }
 
     return kErrorOk;
