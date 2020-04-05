@@ -40,29 +40,30 @@ xcuserdata
 # Linux automake
 #---------------------------------------
 # autoscan
-/autoscan.log
-/configure.scan
+autoscan.log
+configure.scan
 # autoheader
-/config.h.in
+config.h.in
 # aclocal
-/aclocal.m4
-/autom4te.cache
+aclocal.m4
+autom4te.cache
 # automake
 Makefile.in
-/depcomp
-/install-sh
-/missing
+depcomp
+install-sh
+missing
 # autoconf
-/configure
+configure
 # configure
 Makefile
 .deps
-/config.h
-/config.log
-/config.status
-/stamp-h1
+lin/config.h
+lin/config.log
+lin/config.status
+lin/stamp-h1
 # make
 *.o
-/config.h.in~
+lin/config.h.in~
 
-
+# bin
+lin/unit_test/unit_test
