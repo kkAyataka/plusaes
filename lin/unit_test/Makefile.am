@@ -2,9 +2,12 @@
 ROOTDIR = ../../unit_test
 SRCDIR = $(ROOTDIR)/src
 
+CXXFLAGS += -std=c++11
+
 INCLUDES = \
   -I../../include \
-  -I$(ROOTDIR)/lib/include
+  -I$(ROOTDIR)/lib/include \
+  -I$(SRCDIR)/gtest
 
 LDADD = \
   -lpthread
@@ -12,7 +15,7 @@ LDADD = \
 bin_PROGRAMS = unit_test
 
 unit_test_SOURCES = \
-  $(ROOTDIR)/lib/include/gtest/gtest-all.cc \
-  $(ROOTDIR)/lib/include/gtest/gtest_main.cc \
+  $(SRCDIR)/gtest/gtest-all.cc \
+  $(SRCDIR)/main.cpp \
   $(SRCDIR)/test-plusaes.cpp
 
