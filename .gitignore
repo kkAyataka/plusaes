@@ -57,13 +57,13 @@ configure
 # configure
 Makefile
 .deps
-lin/config.h
-lin/config.log
-lin/config.status
-lin/stamp-h1
+lin*/config.h
+lin*/config.log
+lin*/config.status
+lin*/stamp-h1
 # make
 *.o
-lin/config.h.in~
+lin*/config.h.in~
 
 # bin
-lin/unit_test/unit_test
+lin*/unit_test/unit_test
