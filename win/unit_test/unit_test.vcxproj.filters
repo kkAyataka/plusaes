@@ -16,6 +16,9 @@
     <Filter Include="lib\include\gtest">
       <UniqueIdentifier>{c40ce8e7-3c90-418a-b3dc-f3bd3ce49227}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\gtest">
+      <UniqueIdentifier>{589bd606-ee02-4331-9ad3-6301a92c6bec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\plusaes\plusaes.hpp">
@@ -26,14 +29,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\unit_test\lib\include\gtest\gtest_main.cc">
-      <Filter>lib\include\gtest</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\unit_test\lib\include\gtest\gtest-all.cc">
-      <Filter>lib\include\gtest</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\unit_test\src\test-plusaes.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\unit_test\src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\unit_test\src\gtest\gtest-all.cc">
+      <Filter>src\gtest</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
