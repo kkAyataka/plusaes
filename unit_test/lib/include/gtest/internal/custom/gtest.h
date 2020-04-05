@@ -1,4 +1,4 @@
-// Copyright 2006, Google Inc.
+// Copyright 2015, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,12 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Injection point for custom user configurations. See README for details
+//
+// ** Custom implementation starts here **
 
-#include <stdio.h>
+#ifndef GTEST_INCLUDE_GTEST_INTERNAL_CUSTOM_GTEST_H_
+#define GTEST_INCLUDE_GTEST_INTERNAL_CUSTOM_GTEST_H_
 
-#include "gtest/gtest.h"
-
-GTEST_API_ int main(int argc, char **argv) {
-  //printf("Running main() from gtest_main.cc\n");
-  testing::InitGoogleTest(&argc, argv);
-  int r = RUN_ALL_TESTS();
-
-#ifdef _MSC_VER
-  getchar();
-#endif
-  return r;
-}
+#endif  // GTEST_INCLUDE_GTEST_INTERNAL_CUSTOM_GTEST_H_
