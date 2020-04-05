@@ -1,1 +1,69 @@
+#---------------------------------------
+# Windows Visual Studio
+#---------------------------------------
+build
+ipch
+*.user
+*.opensdf
+*.sdf
+*.suo
+.vs
+*.VC.db
+
+#---------------------------------------
+# Mac Xcode
+#---------------------------------------
 .DS_Store
+build/
+DerivedData
+# Various settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xcworkspace
+# Other
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+# Obj-C/Swift specific
+*.hmap
+*.ipa
+
+#---------------------------------------
+# Linux automake
+#---------------------------------------
+# autoscan
+autoscan.log
+configure.scan
+# autoheader
+config.h.in
+# aclocal
+aclocal.m4
+autom4te.cache
+# automake
+Makefile.in
+depcomp
+install-sh
+missing
+# autoconf
+configure
+# configure
+Makefile
+.deps
+lin*/config.h
+lin*/config.log
+lin*/config.status
+lin*/stamp-h1
+# make
+*.o
+lin*/config.h.in~
+
+# bin
+lin*/unit_test/unit_test

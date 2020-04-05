@@ -3,16 +3,21 @@ plusaes
 
 Header only C++ AES cipher library.
 
-Development / Test Environment
-------------------------------
-* Visual Studio 2015 (v140)
-* Xcode 7.0.1 (Apple LLVM 7.0)
-* GCC 4.4.7 (CentOS 6 64-bit)
 
-Supported block cipher mode of operation
-----------------------------------------
-* ECB
-* CBC
+## Development / Test Environment
+
+- Visual Studio 16 2019 (v142)
+- Xcode 11.4 (Apple clang 11.0.0)
+- GCC 4.8.5 (CentOS 7)
+- GCC 4.4.7 (CentOS 6)
+
+
+## Supported block cipher mode of operation
+
+- ECB
+- CBC
+- CTR (Beta)
+
 
 License
 -------
