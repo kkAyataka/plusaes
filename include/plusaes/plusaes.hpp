@@ -330,7 +330,7 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
     return key;
 }
 
-bool is_valid_key_size(const unsigned long key_size) {
+inline bool is_valid_key_size(const unsigned long key_size) {
     if (key_size != 16 && key_size != 24 && key_size != 32) {
         return false;
     }
@@ -342,22 +342,22 @@ bool is_valid_key_size(const unsigned long key_size) {
 } // namespace detail
 
 /** Version number of plusaes. */
-unsigned int version() {
+inline unsigned int version() {
     return PLUSAES_VERSION;
 }
 
 /** Create 128-bit key from string. */
-std::vector<unsigned char> key_from_string(const char (*key_str)[17]) {
+inline std::vector<unsigned char> key_from_string(const char (*key_str)[17]) {
     return detail::key_from_string<17>(key_str);
 }
 
 /** Create 192-bit key from string. */
-std::vector<unsigned char> key_from_string(const char (*key_str)[25]) {
+inline std::vector<unsigned char> key_from_string(const char (*key_str)[25]) {
     return detail::key_from_string<25>(key_str);
 }
 
 /** Create 256-bit key from string. */
-std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
+inline std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
     return detail::key_from_string<33>(key_str);
 }
 
@@ -373,7 +373,7 @@ typedef enum {
 
 namespace detail {
 
-Error check_encrypt_cond(
+inline Error check_encrypt_cond(
     const unsigned long data_size,
     const unsigned long key_size,
     const unsigned long encrypted_size,
@@ -403,7 +403,7 @@ Error check_encrypt_cond(
     return kErrorOk;
 }
 
-Error check_decrypt_cond(
+inline Error check_decrypt_cond(
     const unsigned long data_size,
     const unsigned long key_size,
     const unsigned long decrypted_size,
@@ -434,7 +434,7 @@ Error check_decrypt_cond(
     return kErrorOk;
 }
 
-bool check_padding(const unsigned long padding, const unsigned char data[kStateSize]) {
+inline bool check_padding(const unsigned long padding, const unsigned char data[kStateSize]) {
     if (padding > kStateSize) {
         return false;
     }
