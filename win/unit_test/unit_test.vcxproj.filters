@@ -38,5 +38,8 @@
     <ClCompile Include="..\..\unit_test\src\gtest\gtest-all.cc">
       <Filter>src\gtest</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\unit_test\src\test-ctr.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
