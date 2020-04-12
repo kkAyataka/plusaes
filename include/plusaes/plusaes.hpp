@@ -14,6 +14,7 @@
  * 0x01020304 -> 1.2.3.4 */
 #define PLUSAES_VERSION 0x00090100
 
+/** AES cipher APIs */
 namespace plusaes {
 namespace detail {
 
@@ -21,6 +22,7 @@ const int kWordSize = 4;
 typedef unsigned int Word;
 
 const int kBlockSize = 4;
+/** @private */
 typedef struct {
     Word w[4];
     Word & operator[](const int index) {
