@@ -1,3 +1,8 @@
+# project-specific
+scripts/_gh-pages
+lin*/unit_test/unit_test
+
+
 #---------------------------------------
 # Windows Visual Studio
 #---------------------------------------
@@ -64,6 +69,3 @@ lin*/stamp-h1
 # make
 *.o
 lin*/config.h.in~
-
-# bin
-lin*/unit_test/unit_test
