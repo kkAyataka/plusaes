@@ -6,7 +6,7 @@ cd ../
 readonly GIT_REPO=`git remote get-url origin`
 readonly DOC_VER=`grep "version =" ../doc/conf.py | cut -d "'" -f 2`
 readonly WORK_DIR="scripts/_gh-pages"
-readonly DST_LATEST_DIR="${WORK_DIR}/latest"
+readonly DST_DIR="${WORK_DIR}/doc"
 
 # print var
 echo GIT_REPO=${GIT_REPO}
@@ -30,10 +30,10 @@ else
 fi
 
 # rm current files
-rm -rf "${WORK_DIR}/"
+rm -rf "${DST_DIR}/"
 
 # cp html
-cp -r build/html "${WORK_DIR}"
+cp -r build/html "${DST_DIR}"
 
 # setup
 touch "${WORK_DIR}/.nojekyll"

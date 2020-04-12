@@ -4,7 +4,7 @@ plusaes
 Header only C++ AES cipher library.
 
 - [GitHub Repository](https://github.com/kkAyataka/plusaes)
-- [API Reference](https://kkayataka.github.io/plusaes/namespaceplusaes.html)
+- [API Reference](https://kkayataka.github.io/plusaes/doc/namespaceplusaes.html)
 
 
 ## Development Environment
