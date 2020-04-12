@@ -15,7 +15,7 @@ Header only C++ AES cipher library.
 - GCC 4.4.7 (CentOS 6)
 
 
-## Supported block cipher mode of operation
+## Supported block cipher mode
 
 - ECB
 - CBC
@@ -61,6 +61,7 @@ int main() {
     // Hello, plusaes
 }
 ```
+
 
 License
 -------
