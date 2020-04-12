@@ -361,6 +361,11 @@ inline std::vector<unsigned char> key_from_string(const char (*key_str)[33]) {
     return detail::key_from_string<33>(key_str);
 }
 
+/** Calculates encrypted data size when padding is enabled. */
+inline unsigned long get_padded_encrypted_size(const unsigned long data_size) {
+    return data_size + detail::kStateSize - (data_size % detail::kStateSize);
+}
+
 /** Error code */
 typedef enum {
     kErrorOk = 0,
@@ -390,8 +395,8 @@ inline Error check_encrypt_cond(
 
     // check encrypted buffer size
     if (pads) {
-        const unsigned long padding_size = detail::kStateSize - (data_size % detail::kStateSize);
-        if (encrypted_size < (data_size + padding_size)) {
+        const unsigned long required_size = get_padded_encrypted_size(data_size);
+        if (encrypted_size < required_size) {
             return kErrorInvalidBufferSize;
         }
     }
