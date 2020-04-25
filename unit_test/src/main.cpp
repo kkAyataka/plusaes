@@ -1,4 +1,4 @@
-//#define CHECK_SAMPLE
+#define CHECK_SAMPLE
 #ifndef CHECK_SAMPLE
 
 #include "gtest/gtest.h"
@@ -18,6 +18,21 @@ int main(int argc, char** argv) {
 #include <vector>
 
 int main() {
+    {
+        const std::string raw_data = "Hello, plusaes!!";
+        //const std::vector<unsigned char> raw_data(16);
+        const std::vector<unsigned char> aadata;
+        const std::vector<unsigned char> key = plusaes::key_from_string(&"EncryptionKey128"); // 16-char = 128-bit
+        //const std::vector<unsigned char> key(16);
+        const unsigned char iv[12] = {};
+
+        plusaes::detail::gcm::encrypt_gcm(
+            (unsigned char*)raw_data.data(), raw_data.size(),
+            &aadata[0], aadata.size(),
+            &key[0], key.size(), &iv, 0);
+    }
+    return 0;
+
     // AES-CBC 128-bit
 
     // parameters

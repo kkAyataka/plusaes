@@ -7,7 +7,9 @@
 #ifndef PLUSAES_HPP__
 #define PLUSAES_HPP__
 
-#include <cstring>
+#include <algorithm>
+#include <bitset>
+#include <cmath>
 #include <stdexcept>
 #include <vector>
 
@@ -341,6 +343,367 @@ inline bool is_valid_key_size(const unsigned long key_size) {
         return true;
     }
 }
+
+
+namespace gcm {
+
+const int kBlockBitSize = 128;
+const int kBlockByteSize = kBlockBitSize / 8;
+//typedef std::bitset<kBlockBitSize> Block;
+
+class Block {
+public:
+    unsigned char v[16];
+
+    Block() {
+        memset(v, 0, sizeof(v));
+    }
+
+    Block(const unsigned char * bytes, const unsigned long bytes_size) {
+        memset(v, 0, sizeof(v));
+        copy_to_v(bytes, bytes_size);
+    }
+
+    Block(const std::vector<unsigned char> & bytes) {
+        memset(v, 0, sizeof(v));
+        copy_to_v(&bytes[0], bytes.size());
+    }
+
+    Block(const std::bitset<128> & bits) {
+        memset(v, 0, sizeof(v));
+        const std::bitset<128> mask(0xFF);
+        for (int i = 0; i < 16; ++i) {
+            v[15 - i] |= static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
+        }
+    }
+
+    inline unsigned char * data() {
+        return reinterpret_cast<unsigned char *>(v);
+    }
+
+    inline std::bitset<128> to_bits() const {
+        std::bitset<128> bits;
+        for (int i = 0; i < 16; ++i) {
+            bits << 8;
+            bits |= v[i];
+        }
+
+        return bits;
+    }
+
+    /*
+    bool bit(const unsigned int i) const {
+        const unsigned int vi = i / 32;
+        const unsigned int vb = i % 32;
+
+    }*/
+
+    /*
+    Block & operator=(const Block & b) {
+        if (this != &b) {
+            memcpy(v, b.v, sizeof(v));
+        }
+
+        return *this;
+    }
+    */
+
+private:
+    inline void copy_to_v(const unsigned char * bytes, const unsigned long bytes_size) {
+        const unsigned long cs = (std::min)(bytes_size, static_cast<unsigned long>(16));
+        for (unsigned int i = 0; i < cs; ++i) {
+            v[i] = bytes[i];
+        }
+    }
+};
+
+inline Block operator^(const Block & b1, const Block & b2) {
+    Block b;
+    for (int i = 0; i < 16; ++i) {
+        b.v[i] = b1.v[i] ^ b2.v[i];
+    }
+
+    return b;
+}
+
+
+template<typename T>
+unsigned long ceil(const T v) {
+    return static_cast<unsigned long>(std::ceil(v) + 0.5);
+}
+
+template<std::size_t N1, std::size_t N2>
+std::bitset<N1 + N2> concat(const std::bitset<N1> &v1, const std::bitset<N2> &v2) {
+    std::bitset<N1 + N2> ret(v1.to_string() + v2.to_string());
+    return ret;
+}
+
+template<std::size_t N1, std::size_t N2>
+std::bitset<N1 + N2> operator||(const std::bitset<N1> &v1, const std::bitset<N2> &v2) {
+    std::bitset<N1 + N2> ret(v1.to_string() + v2.to_string());
+    return ret;
+}
+
+template<std::size_t S, std::size_t N>
+std::bitset<S> lsb(const std::bitset<N> &X) {
+    std::bitset<S> r;
+    for (int i = 0; i < S; ++i) {
+        r[i] = X[i];
+    }
+    return r;
+}
+
+template<std::size_t S, std::size_t N>
+std::bitset<S> msb(const std::bitset<N> &X) {
+    std::bitset<S> r;
+    for (int i = 0; i < S; ++i) {
+        r[S - 1 - i] = X[X.size() - 1 - i];
+    }
+    return r;
+}
+
+template<std::size_t S = 32, std::size_t N>
+std::bitset<N> inc(const std::bitset<N> X) {
+    const auto a = msb<N - S>(X);
+    const std::bitset<S> b((lsb<S>(X).to_ulong() + 1) % static_cast<unsigned long>(std::pow(2, S)));
+
+    return concat(a, b);
+}
+
+/** Algorithm 1 @private */
+inline Block mul_blocks(const Block X, const Block Y) {
+    const std::bitset<128> R = Block(std::bitset<8>("11100001") || std::bitset<120>()).to_bits();
+
+    std::bitset<128> X_bits = X.to_bits();
+    std::bitset<128> Z;
+    std::bitset<128> V = Y.to_bits();
+    for (int i = 0; i < kBlockBitSize; ++i) {
+        // Z
+        if (X_bits[i] == false) {
+            Z = Z;
+        }
+        else {
+            Z = Z ^ V;
+        }
+
+        // V
+        if (V[127] == false) {
+            V = V >> 1;
+        }
+        else {
+            V = (V >> 1) ^ R;
+        }
+    }
+
+    return Z;
+}
+
+inline std::vector<Block> ghash(const Block &H, const std::vector<Block> X) {
+    std::vector<Block> Y(X.size());
+    for (int i = 0; i < X.size(); ++i) {
+        Y[i] = mul_blocks((Y[i - 1] ^ X[i]), H);
+    }
+
+    return Y;
+}
+
+template<std::size_t N>
+std::bitset<N * 8> make_bitset(const unsigned char (*bytes)[N]) {
+    std::bitset<N * 8> bits;
+    for (int i = N - 1; i >= 0; --i) {
+        bits <<= 8;
+        bits |= (*bytes)[i];
+    }
+    return bits;
+}
+
+//inline Block make_block(const std::vector<unsigned char> &bytes, const unsigned long offset = 0) {
+/*
+inline Block make_block(const unsigned char *bytes, const std::size_t offset = 0) {
+    const unsigned int len = kBlockBitSize / 8;
+    Block b;
+    for (int i = len - 1; i >= 0; --i) {
+        b <<= 8;
+        b |= bytes[offset + i];
+    }
+
+    return b;
+}
+
+inline Block make_padded_block(const unsigned char *bytes, const std::size_t bytes_size) {
+    Block b;
+    for (std::size_t i = bytes_size - 1; i >= 0; --i) {
+        b <<= 8;
+        b |= bytes[i];;
+    }
+    return b;
+}
+
+inline std::vector<unsigned char> make_bytes(const Block &block) {
+    std::vector<unsigned char> bytes(kBlockByteSize);
+    const unsigned int psize = 32;
+    for (int i = 0; i < kBlockBitSize / psize; ++i) {
+        unsigned long v = 0;
+        for (int j = 0; j < psize; ++j) {
+            v |= block[i * psize + j] << j;
+        }
+        //const unsigned long d32 = (block >> (i * psize)).to_ulong() & 0xFFFFFFFF;
+        memcpy(&bytes[i * 4], &v, 4);
+    }
+
+    return bytes;
+}
+ */
+
+//inline std::vector<unsigned char> gctr(const detail::RoundKeys rkeys, const Block &ICB, const std::vector<unsigned char> X) {
+inline std::vector<unsigned char> gctr(const detail::RoundKeys rkeys, const Block &ICB, const unsigned char *X, const unsigned long X_size) {
+    if (!X || X_size == 0) {
+        return std::vector<unsigned char>();
+    }
+    else {
+        const unsigned long n = ceil(X_size * 8.0 / kBlockBitSize);
+        std::vector<unsigned char> Y(X_size);
+
+        std::vector<Block> CB(n);
+        CB[0] = ICB;
+        for (int i = 1; i < n; ++i) {
+            CB[i] = inc<32>(CB[i - 1].to_bits());
+        }
+        for (int i = 0; i < n; ++i) {
+            //std::vector<unsigned char> CB_bytes = make_bytes(CB[i]);
+            Block eCB = CB[i];
+            encrypt_state(rkeys, CB[i].data(), eCB.data());
+
+            Block Yi = Block(X + i * kBlockBitSize / 8, 16) ^ eCB;
+            //std::vector<unsigned char> Yi_bytes = make_bytes(Yi);
+            //memcpy(&Y[i * kBlockByteSize], &(make_bytes(Yi))[0], kBlockByteSize);
+            memcpy(&Y[i * kBlockByteSize], Yi.data(), kBlockByteSize);
+        }
+
+        // adjust size
+        //const unsigned long rm_bytes = X_size % kBlockByteSize;
+        //Y.resize(Y.size() - rm_bytes);
+
+        return Y;
+    }
+}
+/*
+inline std::vector<Block> gctr(const detail::RoundKeys rkeys, const Block &ICB, const std::vector<Block> X) {
+    if (X.empty()) {
+        return std::vector<Block>();
+    }
+    else {
+        const unsigned long n = X.size();
+        std::vector<Block> Y(n);
+
+        std::vector<Block> CB(n);
+        CB[0] = ICB;
+        for (int i = 1; i < n; ++i) {
+            CB[i] = inc<32>(CB[-1]);
+        }
+        for (int i = 0; i < n; ++i) {
+            std::vector<unsigned char> CB_bytes = make_bytes(CB[i]);
+            encrypt_state(rkeys, &CB_bytes[0], &CB_bytes[0]);
+
+            Y[i] = X[i] ^ make_block(&CB_bytes[0]);
+        }
+
+        return Y;
+    }
+}*/
+
+/*
+template<std::size_t N>
+void push_back(std::vector<unsigned char> &bytes, const std::bitset<N> &bits) {
+    static_assert(N % 8 == 0, "Invalid bitset size");
+
+    const std::size_t bits_byte_size = N / 8;
+    for (int i = 0; i < bits_byte_size; ++i) {
+        bytes.push_back((bits >> (i * 8)).to_ulong() & 0xFF);
+    }
+}
+
+inline void push_back(std::vector<unsigned char> &bytes, const unsigned char *data, const std::size_t data_size) {
+    bytes.insert(bytes.end(), data, data + data_size);
+}
+
+inline void push_back(std::vector<unsigned char> &bytes, const std::size_t zero_size) {
+    for (int i = 0; i < zero_size; ++i) {
+        bytes.push_back(0);
+    }
+}
+ */
+/*
+inline void push_back(std::vector<Block> &blocks, const unsigned char *data, const std::size_t data_size) {
+    const int n = ceil(static_cast<double>(data_size / kBlockByteSize));
+    for (int i = 0; i < (n - 1); ++i) {
+        blocks.push_back(make_block(data, i * kBlockSize));
+    }
+}
+*/
+
+inline void push_back(std::vector<Block> &blocks, const Block &block) {
+    blocks.push_back(block);
+}
+
+inline void encrypt_gcm(
+    const unsigned char * data,
+    const unsigned long data_size,
+    const unsigned char * aadata,
+    const unsigned long aadata_size,
+    const unsigned char * key,
+    const unsigned long key_size,
+    const unsigned char (*iv)[12],
+    unsigned char *encrypted
+) {
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+
+    std::vector<unsigned char> H_raw(kBlockByteSize);
+    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
+    //const Block H = make_block(&H_raw[0]);
+    const Block H = Block(H_raw); // 66e94bd4ef8a2c3b884cfa59ca342b2e
+    const std::bitset<96> iv_bits = make_bitset(iv);
+    const Block J0 = iv_bits || std::bitset<31>() || std::bitset<1>(1);
+    //const Block J0 =  std::bitset<1>(1) || std::bitset<31>() || iv_bits;
+    //const detail::RoundKeys rkeys2 = detail::expand_key(&H_raw[0], H_raw.size());
+    const std::vector<unsigned char> C = gctr(rkeys, inc<32>(J0.to_bits()), data, data_size);
+    // 58e2fccefa7e3061367f1d57a4e7455a
+    //7A, 5F, 32, D3, 5F, 6A, 7D, 18, EE, 22, 61, B6, 2B, 1B, 74, D4,
+
+    const unsigned long lenC = data_size * 8;
+    const unsigned long lenA = aadata_size * 8;
+    const std::size_t u = 128 * ceil(lenC / 128) - lenC;
+    const std::size_t v = 128 * ceil(lenA / 128) - lenA;
+    /*
+    std::vector<unsigned char> ghash_in;
+    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
+    push_back(ghash_in, std::bitset<64>(lenC));
+    push_back(ghash_in, std::bitset<64>(lenA));
+    push_back(ghash_in, u);
+    push_back(ghash_in, data, data_size);
+    push_back(ghash_in, v);
+    push_back(ghash_in, aadata, aadata_size);
+     */
+/*
+    const std::size_t remC = kBlockByteSize - (data_size % kBlockByteSize);
+    const std::size_t remA = kBlockByteSize - (aadata_size % kBlockByteSize);
+    std::vector<Block> ghash_in;
+    ghash_in.reserve(((lenC + u) + (lenA + v) + 128) / 8 / kBlockByteSize);
+    //push_back(ghash_in, aadata, aadata_size);
+    //push_back(ghash_in, make_padded_block(aadata + aadata_size - remA, remA));
+    push_back(ghash_in, data, data_size);
+    //push_back(ghash_in, make_padded_block(data + data_size - remC, remC));
+    push_back(ghash_in, std::bitset<64>(lenA) || std::bitset<64>(lenC));
+
+    const std::vector<Block> S = ghash(H, ghash_in);
+    const std::bitset<32> T = msb<32>(gctr(rkeys, J0, S)[0]);
+    const unsigned long tag = T.to_ulong();
+*/
+    int i = 0;
+    ++i;
+}
+
+} // namespce detail::gcm
 
 } // namespace detail
 
