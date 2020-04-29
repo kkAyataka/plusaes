@@ -40,8 +40,11 @@
     </ClCompile>
     <ClCompile Include="..\..\unit_test\src\test-ctr.cpp">
       <Filter>src</Filter>
-    </ClCompile>
+    </ClCompile> HEAD
     <ClCompile Include="..\..\unit_test\src\test-inc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\unit_test\src\test-gcm.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
