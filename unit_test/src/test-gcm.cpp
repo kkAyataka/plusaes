@@ -13,7 +13,7 @@ TEST(GCM, encrypt_decript_0) {
     plusaes::encrypt_gcm(
         (unsigned char*)raw_data.data(), raw_data.size(),
         0, 0,
-        &key[0], key.size(), &iv,
+        &key[0], key.size(), iv, 12,
         &encrypted[0], &tag);
 
     const unsigned char ok_encrypted[] = {
@@ -32,7 +32,7 @@ TEST(GCM, encrypt_decript_0) {
     plusaes::decrypt_gcm(
         &encrypted[0], encrypted.size(),
         0, 0,
-        &key[0], key.size(), &iv,
+        &key[0], key.size(), iv, 12,
         &decrypted[0], &tag);
 
     const std::string s(decrypted.begin(), decrypted.end());
@@ -51,7 +51,7 @@ TEST(GCM, encrypt_decript_1) {
     plusaes::encrypt_gcm(
         (unsigned char*)raw_data.data(), raw_data.size(),
         0, 0,
-        &key[0], key.size(), &iv,
+        &key[0], key.size(), iv, 12,
         &encrypted[0], &tag);
 
     const unsigned char ok_encrypted[] = {
@@ -70,7 +70,7 @@ TEST(GCM, encrypt_decript_1) {
     plusaes::decrypt_gcm(
         &encrypted[0], encrypted.size(),
         0, 0,
-        &key[0], key.size(), &iv,
+        &key[0], key.size(), iv, 12,
         &decrypted[0], &tag);
 
     const std::string s(decrypted.begin(), decrypted.end());

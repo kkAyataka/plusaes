@@ -527,11 +527,11 @@ inline Block ghash(const Block& H, const std::vector<unsigned char> X) {
 }
 
 template<std::size_t N>
-std::bitset<N * 8> make_bitset(const unsigned char (*bytes)[N]) {
-    std::bitset<N * 8> bits;
-    for (int i = N - 1; i >= 0; --i) {
+std::bitset<N> make_bitset(const unsigned char *bytes, const std::size_t bytes_size) {
+    std::bitset<N> bits;
+    for (int i = bytes_size - 1; i >= 0; --i) {
         bits <<= 8;
-        bits |= (*bytes)[i];
+        bits |= bytes[i];
     }
     return bits;
 }
@@ -590,6 +590,22 @@ inline void push_back_zero_bits(std::vector<unsigned char>& bytes, const unsigne
     bytes.insert(bytes.end(), zero_bytes.begin(), zero_bytes.end());
 }
 
+inline Block calc_H(const RoundKeys & rkeys) {
+    std::vector<unsigned char> H_raw(gcm::kBlockByteSize);
+    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
+    return gcm::Block(H_raw);
+}
+
+inline Block calc_J0(const unsigned char * iv, const std::size_t iv_size) {
+    if (iv_size == 12) {
+        const std::bitset<96> iv_bits = gcm::make_bitset<96>(iv, iv_size);
+        return iv_bits || std::bitset<31>() || std::bitset<1>(1);
+    }
+    else {
+        return Block();
+    }
+}
+
 } // namespce detail::gcm
 
 } // namespace detail
@@ -626,7 +642,8 @@ typedef enum {
     kErrorInvalidKeySize,
     kErrorInvalidBufferSize,
     kErrorInvalidKey,
-    kErrorInvalidNonceSize
+    kErrorInvalidNonceSize,
+    kErrorInvalidTag
 } Error;
 
 namespace detail {
@@ -704,6 +721,69 @@ inline bool check_padding(const unsigned long padding, const unsigned char data[
     }
 
     return true;
+}
+
+inline Error calc_gcm_tag(
+    const unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    unsigned char (*tag)[16]
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
+    
+    const unsigned long lenC = data_size * 8;
+    const unsigned long lenA = aadata_size * 8;
+    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
+    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
+
+    std::vector<unsigned char> ghash_in;
+    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
+    gcm::push_back(ghash_in, aadata, aadata_size);
+    gcm::push_back_zero_bits(ghash_in, v);
+    gcm::push_back(ghash_in, data, data_size);
+    gcm::push_back_zero_bits(ghash_in, u);
+    gcm::push_back(ghash_in, std::bitset<64>(lenA));
+    gcm::push_back(ghash_in, std::bitset<64>(lenC));
+    const gcm::Block S = gcm::ghash(H, ghash_in);
+    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
+
+    // return
+    memcpy(*tag, &T[0], 16);
+
+    return kErrorOk;
+}
+
+inline Error crypt_gcm(
+    const unsigned char* data,
+    const std::size_t data_size,
+    const unsigned char* key,
+    const std::size_t key_size,
+    const unsigned char* iv,
+    const std::size_t iv_size,
+    unsigned char* crypted
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
+
+    const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
+
+    memcpy(crypted, &C[0], data_size);
+
+    return kErrorOk;
 }
 
 } // namespace detail
@@ -984,98 +1064,52 @@ inline Error encrypt_gcm(
     const unsigned long aadata_size,
     const unsigned char * key,
     const unsigned long key_size,
-    const unsigned char (*iv)[12],
+    const unsigned char * iv,
+    const unsigned int iv_size,
     unsigned char * encrypted,
     unsigned char (*tag)[16]
 ) {
-    using namespace detail;
-    using detail::gcm::operator||;
-
-    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-
-    std::vector<unsigned char> H_raw(gcm::kBlockByteSize);
-    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
-    const gcm::Block H(H_raw);
-
-    const std::bitset<96> iv_bits = gcm::make_bitset(iv);
-    const gcm::Block J0 = iv_bits || std::bitset<31>() || std::bitset<1>(1);
-    const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
-
-    const unsigned long lenC = data_size * 8;
-    const unsigned long lenA = aadata_size * 8;
-    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
-    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
-
-    std::vector<unsigned char> ghash_in;
-    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
-    gcm::push_back(ghash_in, aadata, aadata_size);
-    gcm::push_back_zero_bits(ghash_in, v);
-    gcm::push_back(ghash_in, &C[0], C.size());
-    gcm::push_back_zero_bits(ghash_in, u);
-    gcm::push_back(ghash_in, std::bitset<64>(lenA));
-    gcm::push_back(ghash_in, std::bitset<64>(lenC));
-    const gcm::Block S = gcm::ghash(H, ghash_in);
-    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
-
-    // return
-    memcpy(encrypted, &C[0], data_size);
-    memcpy(*tag, &T[0], 16);
-
-    return kErrorOk;
+    std::vector<unsigned char> C(data_size);
+    const Error err = detail::crypt_gcm(data, data_size, key, key_size, iv, iv_size, &C[0]);
+    if (err == kErrorOk) {
+        detail::calc_gcm_tag(&C[0], C.size(), aadata, aadata_size, key, key_size, iv, iv_size, tag);
+        memcpy(encrypted, &C[0], C.size());
+    }
+    
+    return err;
 }
 
 /**
  * Decrypts with GCM mode and checks tag.
  */
 inline Error decrypt_gcm(
-    const unsigned char* data,
+    const unsigned char * data,
     const unsigned long data_size,
-    const unsigned char* aadata,
+    const unsigned char * aadata,
     const unsigned long aadata_size,
-    const unsigned char* key,
+    const unsigned char * key,
     const unsigned long key_size,
-    const unsigned char(*iv)[12],
+    const unsigned char * iv,
+    const unsigned int iv_size,
     unsigned char* decrypted,
-    unsigned char(*tag)[16]
+    const unsigned char(*tag)[16]
 ) {
-    using namespace detail;
-    using detail::gcm::operator||;
-
-    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-
-    std::vector<unsigned char> H_raw(gcm::kBlockByteSize);
-    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
-    const gcm::Block H(H_raw);
-
-    const std::bitset<96> iv_bits = gcm::make_bitset(iv);
-    const gcm::Block J0 = iv_bits || std::bitset<31>() || std::bitset<1>(1);
-    const std::vector<unsigned char> P = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
-
-    // alias
     const unsigned char * C = data;
     const unsigned long C_size = data_size;
+    unsigned char tagd[16] = {};
+    detail::calc_gcm_tag(C, C_size, aadata, aadata_size, key, key_size, iv, iv_size, &tagd);
 
-    const unsigned long lenC = data_size * 8;
-    const unsigned long lenA = aadata_size * 8;
-    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
-    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
-
-    std::vector<unsigned char> ghash_in;
-    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
-    gcm::push_back(ghash_in, aadata, aadata_size);
-    gcm::push_back_zero_bits(ghash_in, v);
-    gcm::push_back(ghash_in, C, C_size);
-    gcm::push_back_zero_bits(ghash_in, u);
-    gcm::push_back(ghash_in, std::bitset<64>(lenA));
-    gcm::push_back(ghash_in, std::bitset<64>(lenC));
-    const gcm::Block S = gcm::ghash(H, ghash_in);
-    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
-
-    // return
-    memcpy(decrypted, &P[0], data_size);
-    memcpy(*tag, &T[0], 16);
-
-    return kErrorOk;
+    if (memcmp(tag, tagd, 16) != 0) {
+        return kErrorInvalidTag;
+    }
+    else {
+        std::vector<unsigned char> P(data_size);
+        const Error err = detail::crypt_gcm(data, data_size, key, key_size, iv, iv_size, &P[0]);
+        if (err == kErrorOk) {
+            memcpy(decrypted, &P[0], P.size());    
+        }
+        return err;
+    }
 }
 
 /** @} */
