@@ -418,25 +418,13 @@ public:
         return bits;
     }
 
-    inline std::bitset<128> to_bits2() const {
-        std::bitset<128> bits;
-        for (int i = 15; i >= 0; --i) {
-            bits <<= 8;
-            bits |= v_[i];
+    inline const Block & operator^(const Block & b) const {
+        Block r;
+        for (int i = 0; i < 16; ++i) {
+            r.data()[i] = data()[i] ^ b.data()[i];
         }
-
-        return bits;
+        return r;
     }
-
-    /*
-    Block & operator=(const Block & b) {
-        if (this != &b) {
-            memcpy(v, b.v, sizeof(v));
-        }
-
-        return *this;
-    }
-    */
 
 private:
     unsigned char v_[16];
@@ -450,16 +438,6 @@ private:
         }
     }
 };
-
-inline Block operator^(const Block & b1, const Block & b2) {
-    Block b;
-    for (int i = 0; i < 16; ++i) {
-        b.data()[i] = b1.data()[i] ^ b2.data()[i];
-    }
-
-    return b;
-}
-
 
 template<typename T>
 unsigned long ceil(const T v) {
@@ -558,45 +536,7 @@ std::bitset<N * 8> make_bitset(const unsigned char (*bytes)[N]) {
     return bits;
 }
 
-//inline Block make_block(const std::vector<unsigned char> &bytes, const unsigned long offset = 0) {
-/*
-inline Block make_block(const unsigned char *bytes, const std::size_t offset = 0) {
-    const unsigned int len = kBlockBitSize / 8;
-    Block b;
-    for (int i = len - 1; i >= 0; --i) {
-        b <<= 8;
-        b |= bytes[offset + i];
-    }
-
-    return b;
-}
-
-inline Block make_padded_block(const unsigned char *bytes, const std::size_t bytes_size) {
-    Block b;
-    for (std::size_t i = bytes_size - 1; i >= 0; --i) {
-        b <<= 8;
-        b |= bytes[i];;
-    }
-    return b;
-}
-
-inline std::vector<unsigned char> make_bytes(const Block &block) {
-    std::vector<unsigned char> bytes(kBlockByteSize);
-    const unsigned int psize = 32;
-    for (int i = 0; i < kBlockBitSize / psize; ++i) {
-        unsigned long v = 0;
-        for (int j = 0; j < psize; ++j) {
-            v |= block[i * psize + j] << j;
-        }
-        //const unsigned long d32 = (block >> (i * psize)).to_ulong() & 0xFFFFFFFF;
-        memcpy(&bytes[i * 4], &v, 4);
-    }
-
-    return bytes;
-}
- */
-
-inline std::vector<unsigned char> gctr(const detail::RoundKeys rkeys, const Block &ICB, const unsigned char *X, const unsigned long X_size) {
+inline std::vector<unsigned char> gctr(const detail::RoundKeys &rkeys, const Block &ICB, const unsigned char *X, const unsigned long X_size){
     if (!X || X_size == 0) {
         return std::vector<unsigned char>();
     }
@@ -614,6 +554,8 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys rkeys, const Bloc
             else {
                 CB = inc32(CB.to_bits());
             }
+
+            // CIPH
             encrypt_state(rkeys, CB.data(), eCB.data());
 
             // Y
@@ -631,60 +573,6 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys rkeys, const Bloc
         return Y;
     }
 }
-/*
-inline std::vector<Block> gctr(const detail::RoundKeys rkeys, const Block &ICB, const std::vector<Block> X) {
-    if (X.empty()) {
-        return std::vector<Block>();
-    }
-    else {
-        const unsigned long n = X.size();
-        std::vector<Block> Y(n);
-
-        std::vector<Block> CB(n);
-        CB[0] = ICB;
-        for (int i = 1; i < n; ++i) {
-            CB[i] = inc<32>(CB[-1]);
-        }
-        for (int i = 0; i < n; ++i) {
-            std::vector<unsigned char> CB_bytes = make_bytes(CB[i]);
-            encrypt_state(rkeys, &CB_bytes[0], &CB_bytes[0]);
-
-            Y[i] = X[i] ^ make_block(&CB_bytes[0]);
-        }
-
-        return Y;
-    }
-}*/
-
-/*
-template<std::size_t N>
-void push_back(std::vector<unsigned char> &bytes, const std::bitset<N> &bits) {
-    static_assert(N % 8 == 0, "Invalid bitset size");
-
-    const std::size_t bits_byte_size = N / 8;
-    for (int i = 0; i < bits_byte_size; ++i) {
-        bytes.push_back((bits >> (i * 8)).to_ulong() & 0xFF);
-    }
-}
-
-inline void push_back(std::vector<unsigned char> &bytes, const unsigned char *data, const std::size_t data_size) {
-    bytes.insert(bytes.end(), data, data + data_size);
-}
-
-inline void push_back(std::vector<unsigned char> &bytes, const std::size_t zero_size) {
-    for (int i = 0; i < zero_size; ++i) {
-        bytes.push_back(0);
-    }
-}
- */
-/*
-inline void push_back(std::vector<Block> &blocks, const unsigned char *data, const std::size_t data_size) {
-    const int n = ceil(static_cast<double>(data_size / kBlockByteSize));
-    for (int i = 0; i < (n - 1); ++i) {
-        blocks.push_back(make_block(data, i * kBlockSize));
-    }
-}
-*/
 
 inline void push_back(std::vector<unsigned char> & bytes, const unsigned char * data, const unsigned long data_size) {
     bytes.insert(bytes.end(), data, data + data_size);
@@ -1082,10 +970,12 @@ inline Error decrypt_cbc(
     return kErrorOk;
 }
 
-/** @defgroup GCM */
-/* @{ */
+/** @defgroup GCM GMC
+ * GCM mode
+ * @{ */
 
 /**
+ * Eecrypts with GCM mode and generates tag.
  */
 inline Error encrypt_gcm(
     const unsigned char * data,
@@ -1097,7 +987,6 @@ inline Error encrypt_gcm(
     const unsigned char (*iv)[12],
     unsigned char * encrypted,
     unsigned char (*tag)[16]
-
 ) {
     using namespace detail;
     using detail::gcm::operator||;
@@ -1135,7 +1024,61 @@ inline Error encrypt_gcm(
     return kErrorOk;
 }
 
-/* @} */
+/**
+ * Decrypts with GCM mode and checks tag.
+ */
+inline Error decrypt_gcm(
+    const unsigned char* data,
+    const unsigned long data_size,
+    const unsigned char* aadata,
+    const unsigned long aadata_size,
+    const unsigned char* key,
+    const unsigned long key_size,
+    const unsigned char(*iv)[12],
+    unsigned char* decrypted,
+    unsigned char(*tag)[16]
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+
+    std::vector<unsigned char> H_raw(gcm::kBlockByteSize);
+    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
+    const gcm::Block H(H_raw);
+
+    const std::bitset<96> iv_bits = gcm::make_bitset(iv);
+    const gcm::Block J0 = iv_bits || std::bitset<31>() || std::bitset<1>(1);
+    const std::vector<unsigned char> P = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
+
+    // alias
+    const unsigned char * C = data;
+    const unsigned long C_size = data_size;
+
+    const unsigned long lenC = data_size * 8;
+    const unsigned long lenA = aadata_size * 8;
+    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
+    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
+
+    std::vector<unsigned char> ghash_in;
+    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
+    gcm::push_back(ghash_in, aadata, aadata_size);
+    gcm::push_back_zero_bits(ghash_in, v);
+    gcm::push_back(ghash_in, C, C_size);
+    gcm::push_back_zero_bits(ghash_in, u);
+    gcm::push_back(ghash_in, std::bitset<64>(lenA));
+    gcm::push_back(ghash_in, std::bitset<64>(lenC));
+    const gcm::Block S = gcm::ghash(H, ghash_in);
+    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
+
+    // return
+    memcpy(decrypted, &P[0], data_size);
+    memcpy(*tag, &T[0], 16);
+
+    return kErrorOk;
+}
+
+/** @} */
 
 /**
  * @note
