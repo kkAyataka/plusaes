@@ -26,6 +26,18 @@ TEST(GCM, encrypt_decript_0) {
 
     EXPECT_EQ(memcmp(&encrypted[0], ok_encrypted, sizeof(ok_encrypted)), 0);
     EXPECT_EQ(memcmp(tag, ok_tag, sizeof(ok_tag)), 0);
+
+    // Decrypt
+    std::vector<unsigned char> decrypted(encrypted.size());
+    plusaes::decrypt_gcm(
+        &encrypted[0], encrypted.size(),
+        0, 0,
+        &key[0], key.size(), &iv,
+        &decrypted[0], &tag);
+
+    const std::string s(decrypted.begin(), decrypted.end());
+    EXPECT_EQ(decrypted, raw_data);
+
 }
 
 TEST(GCM, encrypt_decript_1) {
@@ -52,4 +64,15 @@ TEST(GCM, encrypt_decript_1) {
 
     EXPECT_EQ(memcmp(&encrypted[0], ok_encrypted, sizeof(ok_encrypted)), 0);
     EXPECT_EQ(memcmp(tag, ok_tag, sizeof(ok_tag)), 0);
+
+    // Decrypt
+    std::vector<unsigned char> decrypted(encrypted.size());
+    plusaes::decrypt_gcm(
+        &encrypted[0], encrypted.size(),
+        0, 0,
+        &key[0], key.size(), &iv,
+        &decrypted[0], &tag);
+
+    const std::string s(decrypted.begin(), decrypted.end());
+    EXPECT_EQ(memcmp(&decrypted[0], raw_data.data(), decrypted.size()), 0);
 }
