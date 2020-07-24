@@ -168,6 +168,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\plusaes\plusaes.hpp" />
     <ClInclude Include="..\..\unit_test\lib\include\gtest\gtest.h" />
+    <ClInclude Include="..\..\unit_test\src\util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\unit_test\src\gtest\gtest-all.cc" />

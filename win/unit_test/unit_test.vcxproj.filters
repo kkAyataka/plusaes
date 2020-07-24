@@ -27,6 +27,9 @@
     <ClInclude Include="..\..\unit_test\lib\include\gtest\gtest.h">
       <Filter>lib\include\gtest</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\unit_test\src\util.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\unit_test\src\test-plusaes.cpp">

@@ -2,77 +2,113 @@
 
 #include "plusaes/plusaes.hpp"
 
-TEST(GCM, encrypt_decript_0) {
-    const std::vector<unsigned char> raw_data(16);
-    const std::vector<unsigned char> aadata(0);
-    const std::vector<unsigned char> key(16);
-    const unsigned char iv[12] = {};
-    std::vector<unsigned char> encrypted(raw_data.size());
+#include "util.hpp"
+
+typedef std::vector<unsigned char> uchar_vec;
+#define DATA_T(v) v
+#define AADATA_T(v) v
+#define KEY_T(v) v
+#define IV_T(v) v
+#define OK_ENCRYPTED_T(v) v
+#define OK_TAG_T(v) v
+
+struct GcmTestParam {
+    std::string desc;
+    uchar_vec data;
+    uchar_vec aadata;
+    uchar_vec key;
+    uchar_vec iv;
+    uchar_vec ok_encrypted;
+    uchar_vec ok_tag;
+
+    GcmTestParam(
+        const std::string & desc,
+        const uchar_vec & data,
+        const uchar_vec & aadata,
+        const uchar_vec & key,
+        const uchar_vec & iv,
+        const uchar_vec & ok_encrypted,
+        const uchar_vec & ok_tag
+    ) : desc(desc),
+        data(data),
+        aadata(aadata),
+        key(key),
+        iv(iv),
+        ok_encrypted(ok_encrypted),
+        ok_tag(ok_tag) {
+    }
+
+    GcmTestParam(
+        const std::string & desc,
+        const std::string & data,
+        const uchar_vec & aadata,
+        const std::string & key,
+        const uchar_vec & iv,
+        const uchar_vec & ok_encrypted,
+        const uchar_vec & ok_tag
+    ) : desc(desc),
+        data(data.begin(), data.end()),
+        aadata(aadata),
+        key(key.begin(), key.end()),
+        iv(iv),
+        ok_encrypted(ok_encrypted),
+        ok_tag(ok_tag) {
+    }
+};
+
+std::ostream& operator<<(std::ostream& stream, const GcmTestParam & p) {
+    return stream << p.desc;
+}
+
+class GcmTest : public testing::TestWithParam<GcmTestParam> {
+};
+
+TEST_P(GcmTest, encrypt_decript) {
+    const auto p = GetParam();
+
+    std::vector<unsigned char> encrypted(p.data.size());
     unsigned char tag[16] = {};
 
+    // Encrypt
     plusaes::encrypt_gcm(
-        (unsigned char*)raw_data.data(), raw_data.size(),
-        0, 0,
-        &key[0], key.size(), iv, 12,
+        &p.data[0], p.data.size(),
+        (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
+        &p.key[0], p.key.size(), &p.iv[0], p.iv.size(),
         &encrypted[0], &tag);
 
-    const unsigned char ok_encrypted[] = {
-        0x03, 0x88, 0xda, 0xce, 0x60, 0xb6, 0xa3, 0x92, 0xf3, 0x28, 0xc2, 0xb9, 0x71, 0xb2, 0xfe, 0x78
-    };
-
-    const unsigned char ok_tag[] = {
-        0xab, 0x6e, 0x47, 0xd4, 0x2c, 0xec, 0x13, 0xbd, 0xf5, 0x3a, 0x67, 0xb2, 0x12, 0x57, 0xbd, 0xdf
-    };
-
-    EXPECT_EQ(memcmp(&encrypted[0], ok_encrypted, sizeof(ok_encrypted)), 0);
-    EXPECT_EQ(memcmp(tag, ok_tag, sizeof(ok_tag)), 0);
-
+    EXPECT_EQ(memcmp(&encrypted[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
+    EXPECT_EQ(memcmp(tag, &p.ok_tag[0], p.ok_tag.size()), 0);
+    
     // Decrypt
     std::vector<unsigned char> decrypted(encrypted.size());
     plusaes::decrypt_gcm(
         &encrypted[0], encrypted.size(),
-        0, 0,
-        &key[0], key.size(), iv, 12,
+        (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
+        &p.key[0], p.key.size(), &p.iv[0], p.iv.size(),
         &decrypted[0], &tag);
 
-    const std::string s(decrypted.begin(), decrypted.end());
-    EXPECT_EQ(decrypted, raw_data);
-
+    EXPECT_EQ(memcmp(&decrypted[0], p.data.data(), decrypted.size()), 0);
 }
 
-TEST(GCM, encrypt_decript_1) {
-    const std::string raw_data = "Hello, plusaes";
-    const std::vector<unsigned char> aadata(0);
-    const std::vector<unsigned char> key = plusaes::key_from_string(&"EncryptionKey128");
-    const unsigned char iv[12] = {};
-    std::vector<unsigned char> encrypted(raw_data.size());
-    unsigned char tag[16] = {};
-
-    plusaes::encrypt_gcm(
-        (unsigned char*)raw_data.data(), raw_data.size(),
-        0, 0,
-        &key[0], key.size(), iv, 12,
-        &encrypted[0], &tag);
-
-    const unsigned char ok_encrypted[] = {
-        0x7A, 0x5F, 0x32, 0xD3, 0x5F, 0x6A, 0x7D, 0x18, 0xEE, 0x22, 0x61, 0xB6, 0x2B, 0x1B
-    };
-
-    const unsigned char ok_tag[] = {
-        0xB4, 0xFA, 0x52, 0xD7, 0x19, 0x24, 0x1, 0xFC, 0x6, 0xB4, 0x27, 0xF3, 0x1E, 0xBE, 0x5, 0xCD,
-    };
-
-    EXPECT_EQ(memcmp(&encrypted[0], ok_encrypted, sizeof(ok_encrypted)), 0);
-    EXPECT_EQ(memcmp(tag, ok_tag, sizeof(ok_tag)), 0);
-
-    // Decrypt
-    std::vector<unsigned char> decrypted(encrypted.size());
-    plusaes::decrypt_gcm(
-        &encrypted[0], encrypted.size(),
-        0, 0,
-        &key[0], key.size(), iv, 12,
-        &decrypted[0], &tag);
-
-    const std::string s(decrypted.begin(), decrypted.end());
-    EXPECT_EQ(memcmp(&decrypted[0], raw_data.data(), decrypted.size()), 0);
-}
+INSTANTIATE_TEST_SUITE_P(Zero, GcmTest,
+    testing::Values(
+        GcmTestParam(
+            "Zero16Bytes",
+            DATA_T(uchar_vec(16)),
+            AADATA_T(uchar_vec(0)),
+            KEY_T(uchar_vec(16)),
+            IV_T(uchar_vec(12)),
+            OK_ENCRYPTED_T(hs2b("0388dace60b6a392f328c2b971b2fe78")),
+            OK_TAG_T(hs2b("ab6e47d42cec13bdf53a67b21257bddf"))
+        ),
+        GcmTestParam(
+            "LessThan16",
+            DATA_T("Hello, plusaes"),
+            AADATA_T(uchar_vec(0)),
+            KEY_T("EncryptionKey128"),
+            IV_T(uchar_vec(12)),
+            OK_ENCRYPTED_T(hs2b("7A5F32D35F6A7D18EE2261B62B1B")),
+            OK_TAG_T(hs2b("B4FA52D7192401FC06B427F31EBE05CD"))
+        )
+    ),
+    testing::PrintToStringParamName());
