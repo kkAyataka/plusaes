@@ -109,6 +109,23 @@ INSTANTIATE_TEST_SUITE_P(Zero, GcmTest,
             IV_T(uchar_vec(12)),
             OK_ENCRYPTED_T(hs2b("7A5F32D35F6A7D18EE2261B62B1B")),
             OK_TAG_T(hs2b("B4FA52D7192401FC06B427F31EBE05CD"))
+        ),
+        GcmTestParam(
+            "Data16Aadata0Iv12",
+            DATA_T(hs2b(
+                "d9313225f88406e5a55909c5aff5269a"
+                "86a7a9531534f7da2e4c303d8a318a72"
+                "1c3c0c95956809532fcf0e2449a6b525"
+                "b16aedf5aa0de657ba637b391aafd255")),
+            AADATA_T(uchar_vec(0)),
+            KEY_T(hs2b("feffe9928665731c6d6a8f9467308308")),
+            IV_T(hs2b("cafebabefacedbaddecaf888")),
+            OK_ENCRYPTED_T(hs2b(
+                "42831ec2217774244b7221b784d0d49c"
+                "e3aa212f2c02a4e035c17e2329aca12e"
+                "21d514b25466931c7d8f6a5aac84aa05"
+                "1ba30b396a0aac973d58e091473f5985")),
+            OK_TAG_T(hs2b("4d5c2af327cd64a62cf35abd2ba6fab4"))
         )
     ),
     testing::PrintToStringParamName());

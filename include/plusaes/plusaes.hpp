@@ -529,7 +529,7 @@ inline Block ghash(const Block& H, const std::vector<unsigned char> X) {
 template<std::size_t N>
 std::bitset<N> make_bitset(const unsigned char *bytes, const std::size_t bytes_size) {
     std::bitset<N> bits;
-    for (int i = bytes_size - 1; i >= 0; --i) {
+    for (int i = 0; i < bytes_size; ++i) {
         bits <<= 8;
         bits |= bytes[i];
     }
@@ -581,7 +581,7 @@ inline void push_back(std::vector<unsigned char> & bytes, const unsigned char * 
 inline void push_back(std::vector<unsigned char> & bytes, const std::bitset<64> & bits) {
     const std::bitset<64> mask(0xFF); // 1 byte mask
     for (std::size_t i = 0; i < 8; ++i) {
-        bytes.push_back(((bits >> ((i - 7) * 8)) & mask).to_ulong());
+        bytes.push_back(((bits >> ((7 - i) * 8)) & mask).to_ulong());
     }
 }
 
