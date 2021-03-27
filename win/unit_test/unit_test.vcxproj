@@ -169,6 +169,7 @@
     <ClCompile Include="..\..\unit_test\src\gtest\gtest-all.cc" />
     <ClCompile Include="..\..\unit_test\src\main.cpp" />
     <ClCompile Include="..\..\unit_test\src\test-ctr.cpp" />
+    <ClCompile Include="..\..\unit_test\src\test-inc.cpp" />
     <ClCompile Include="..\..\unit_test\src\test-plusaes.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
