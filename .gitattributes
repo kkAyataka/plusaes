@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Consider building on Docker on Windows.
+lin/**/* text eol=lf
