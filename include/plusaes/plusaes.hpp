@@ -7,6 +7,7 @@
 #ifndef PLUSAES_HPP__
 #define PLUSAES_HPP__
 
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
