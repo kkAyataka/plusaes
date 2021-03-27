@@ -5,6 +5,14 @@ Change Log
 
 - Supports CTR mode ([Tronic](https://github.com/Tronic))
 
+## v0.9.2 (2020-03-27)
+
+- Fix unamed struct warning/error ([#15](https://github.com/kkAyataka/plusaes/issues/15))
+- Fix memcpy declaration error ([#17](https://github.com/kkAyataka/plusaes/issues/17))
+- Add get_padded_encrypted_size function
+- Update the development environment
+
+
 ## v0.9.1 (2020-03-28)
 
 - Fix the CBC logic for the data that is less than 16 ([#5](https://github.com/kkAyataka/plusaes/issues/5))
