@@ -18,5 +18,5 @@ unit_test_SOURCES = \
   $(SRCDIR)/gtest/gtest-all.cc \
   $(SRCDIR)/main.cpp \
   $(SRCDIR)/test-ctr.cpp \
-  $(SRCDIR)/test-plusaes.cpp
-
+  $(SRCDIR)/test-plusaes.cpp \
+  $(SRCDIR)/test-inc.cpp
