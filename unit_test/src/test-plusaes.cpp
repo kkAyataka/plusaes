@@ -82,7 +82,7 @@ TEST(AES, version) {
         ((plusaes::version() >>  8) & 0xFF) << '.' <<
         ((plusaes::version())       & 0xFF) << std::endl;
 
-    ASSERT_EQ(plusaes::version(), 0x00090100);
+    ASSERT_EQ(plusaes::version(), 0x00090200);
 }
 
 TEST(AES, sbox) {
