@@ -43,7 +43,7 @@
     </ClCompile>
     <ClCompile Include="..\..\unit_test\src\test-ctr.cpp">
       <Filter>src</Filter>
-    </ClCompile> HEAD
+    </ClCompile>
     <ClCompile Include="..\..\unit_test\src\test-inc.cpp">
       <Filter>src</Filter>
     </ClCompile>
