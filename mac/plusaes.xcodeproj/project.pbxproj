@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9E446E7F2442A2C5000D333A /* test-ctr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E446E7E2442A2C5000D333A /* test-ctr.cpp */; };
+		9E4D6130270F2A3800E08445 /* test-gcm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D612F270F2A3800E08445 /* test-gcm.cpp */; };
+		9E4D6131270F2A4100E08445 /* test-gcm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D612F270F2A3800E08445 /* test-gcm.cpp */; };
 		9E6747BC2439B4690007285B /* gtest-all.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9E6747AF2439B4690007285B /* gtest-all.cc */; };
 		9E6747C52439B4690007285B /* test-plusaes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E6747BA2439B4690007285B /* test-plusaes.cpp */; };
 		9E6747C62439B4690007285B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E6747BB2439B4690007285B /* main.cpp */; };
@@ -35,6 +37,7 @@
 		004FC8EA1BC5E222005D4DD3 /* unit_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = unit_test; sourceTree = BUILT_PRODUCTS_DIR; };
 		004FC8FA1BC5E37C005D4DD3 /* plusaes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = plusaes.hpp; path = ../include/plusaes/plusaes.hpp; sourceTree = "<group>"; };
 		9E446E7E2442A2C5000D333A /* test-ctr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "test-ctr.cpp"; sourceTree = "<group>"; };
+		9E4D612F270F2A3800E08445 /* test-gcm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "test-gcm.cpp"; sourceTree = "<group>"; };
 		9E6747AB2439B4360007285B /* gtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gtest.h; sourceTree = "<group>"; };
 		9E6747AF2439B4690007285B /* gtest-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "gtest-all.cc"; sourceTree = "<group>"; };
 		9E6747BA2439B4690007285B /* test-plusaes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "test-plusaes.cpp"; sourceTree = "<group>"; };
@@ -42,6 +45,7 @@
 		9E68E6B824A774E600F953F9 /* unit_test_target.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = unit_test_target.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E68E6BA24A774E600F953F9 /* unit_test_target.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = unit_test_target.m; sourceTree = "<group>"; };
 		9E68E6BC24A774E600F953F9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9EC3D76F271C1E91003EFDEC /* util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = util.hpp; sourceTree = "<group>"; };
 		9EF1C81F260ECF9C0056CA87 /* test-inc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "test-inc.cpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -138,8 +142,10 @@
 				9E6747AE2439B4690007285B /* gtest */,
 				9E6747BB2439B4690007285B /* main.cpp */,
 				9E446E7E2442A2C5000D333A /* test-ctr.cpp */,
+				9E4D612F270F2A3800E08445 /* test-gcm.cpp */,
 				9EF1C81F260ECF9C0056CA87 /* test-inc.cpp */,
 				9E6747BA2439B4690007285B /* test-plusaes.cpp */,
+				9EC3D76F271C1E91003EFDEC /* util.hpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -204,7 +210,7 @@
 		0003311C1BC5E1B2002B4128 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1300;
 				ORGANIZATIONNAME = kkAyataka;
 				TargetAttributes = {
 					004FC8E91BC5E222005D4DD3 = {
@@ -251,6 +257,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E6747C62439B4690007285B /* main.cpp in Sources */,
+				9E4D6130270F2A3800E08445 /* test-gcm.cpp in Sources */,
 				9E6747BC2439B4690007285B /* gtest-all.cc in Sources */,
 				9EF1C820260ECF9C0056CA87 /* test-inc.cpp in Sources */,
 				9E6747C52439B4690007285B /* test-plusaes.cpp in Sources */,
@@ -263,6 +270,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E68E6C324A7771A00F953F9 /* plusaes.hpp in Sources */,
+				9E4D6131270F2A4100E08445 /* test-gcm.cpp in Sources */,
 				9E68E6BB24A774E600F953F9 /* unit_test_target.m in Sources */,
 				9E68E6C024A776A200F953F9 /* gtest-all.cc in Sources */,
 				9E68E6C124A776A600F953F9 /* test-plusaes.cpp in Sources */,
@@ -296,6 +304,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -319,7 +328,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -349,6 +358,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -366,7 +376,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 			};
@@ -375,6 +385,7 @@
 		004FC8EF1BC5E222005D4DD3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../include\" \"$(SRCROOT)/../unit_test/lib/include\" \"$(SRCROOT)/../unit_test/src/gtest\"";
 			};
@@ -383,6 +394,7 @@
 		004FC8F01BC5E222005D4DD3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../include\" \"$(SRCROOT)/../unit_test/lib/include\" \"$(SRCROOT)/../unit_test/src/gtest\"";
 			};
@@ -402,7 +414,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = unit_test_target/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.pluspiece.unit-test-target";
@@ -425,7 +436,6 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = unit_test_target/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.pluspiece.unit-test-target";
 				PRODUCT_NAME = "$(TARGET_NAME)";
