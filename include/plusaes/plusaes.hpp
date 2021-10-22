@@ -396,7 +396,7 @@ public:
         init_v(0, 0);
         const std::bitset<128> mask(0xFF); // 1 byte mask
         for (std::size_t i = 0; i < 16; ++i) {
-            v_[15 - i] |= static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
+            v_[15 - i] = static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
         }
     }
 
@@ -418,7 +418,7 @@ public:
         return bits;
     }
 
-    inline const Block & operator^(const Block & b) const {
+    inline Block operator^(const Block & b) const {
         Block r;
         for (int i = 0; i < 16; ++i) {
             r.data()[i] = data()[i] ^ b.data()[i];
@@ -442,12 +442,6 @@ private:
 template<typename T>
 unsigned long ceil(const T v) {
     return static_cast<unsigned long>(std::ceil(v) + 0.5);
-}
-
-template<std::size_t N1, std::size_t N2>
-std::bitset<N1 + N2> concat(const std::bitset<N1> &v1, const std::bitset<N2> &v2) {
-    std::bitset<N1 + N2> ret(v1.to_string() + v2.to_string());
-    return ret;
 }
 
 template<std::size_t N1, std::size_t N2>
@@ -547,7 +541,6 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys &rkeys, const Blo
         Block CB;
         for (std::size_t i = 0; i < n; ++i) {
             // CB
-            Block eCB;
             if (i == 0) { // fitst
                 CB = ICB;
             }
@@ -556,6 +549,7 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys &rkeys, const Blo
             }
 
             // CIPH
+            Block eCB;
             encrypt_state(rkeys, CB.data(), eCB.data());
 
             // Y
@@ -740,7 +734,7 @@ inline Error calc_gcm_tag(
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
     const gcm::Block H = gcm::calc_H(rkeys);
     const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
-    
+
     const unsigned long lenC = data_size * 8;
     const unsigned long lenA = aadata_size * 8;
     const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
@@ -776,7 +770,6 @@ inline Error crypt_gcm(
     using detail::gcm::operator||;
 
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-    const gcm::Block H = gcm::calc_H(rkeys);
     const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
 
     const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
@@ -1075,7 +1068,7 @@ inline Error encrypt_gcm(
         detail::calc_gcm_tag(&C[0], C.size(), aadata, aadata_size, key, key_size, iv, iv_size, tag);
         memcpy(encrypted, &C[0], C.size());
     }
-    
+
     return err;
 }
 
@@ -1106,7 +1099,7 @@ inline Error decrypt_gcm(
         std::vector<unsigned char> P(data_size);
         const Error err = detail::crypt_gcm(data, data_size, key, key_size, iv, iv_size, &P[0]);
         if (err == kErrorOk) {
-            memcpy(decrypted, &P[0], P.size());    
+            memcpy(decrypted, &P[0], P.size());
         }
         return err;
     }
