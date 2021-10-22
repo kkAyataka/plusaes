@@ -354,7 +354,7 @@ const int kBlockByteSize = kBlockBitSize / 8;
  * @private
  * GCM operation unit as bit.
  * This library handles 128 bit little endian bit array.
- * e.g. 0^120 || 1 == "000...0001" (binary string) == 1
+ * e.g. 0^127 || 1 == "000...0001" (bit string) == 1
  */
 typedef std::bitset<kBlockBitSize> bitset128;
 
@@ -363,8 +363,8 @@ typedef std::bitset<kBlockBitSize> bitset128;
  * GCM operation unit.
  * Little endian byte array
  *
- * If bitset128 is 1: 0^120 || 1 == "000...0001" (binary string) == 1
- * byte array is 0x00, 0x00, 0x00 ... 0x01.
+ * If bitset128 is 1: 0^127 || 1 == "000...0001" (bit string) == 1
+ * byte array is 0x00, 0x00, 0x00 ... 0x01 (low -> high).
  * Byte array is NOT 0x01, 0x00 ... 0x00.
  *
  * This library handles GCM bit string in two ways.
@@ -376,7 +376,6 @@ typedef std::bitset<kBlockBitSize> bitset128;
  * The other one is a byte array.
  * <- first byte
  * byte || byte || byte...
- *
  */
 class Block {
 public:
@@ -509,6 +508,7 @@ inline Block mul_blocks(const Block X, const Block Y) {
     return Z;
 }
 
+/** Algorithm 2 @private */
 inline Block ghash(const Block& H, const std::vector<unsigned char> X) {
     const unsigned long m = X.size() / kBlockByteSize;
     Block Ym;
@@ -530,6 +530,7 @@ std::bitset<N> make_bitset(const unsigned char *bytes, const std::size_t bytes_s
     return bits;
 }
 
+/** Algorithm 3 @private */
 inline std::vector<unsigned char> gctr(const detail::RoundKeys &rkeys, const Block &ICB, const unsigned char *X, const unsigned long X_size){
     if (!X || X_size == 0) {
         return std::vector<unsigned char>();
@@ -757,6 +758,7 @@ inline Error calc_gcm_tag(
     return kErrorOk;
 }
 
+/** Algorithm 4 and 5 @private */
 inline Error crypt_gcm(
     const unsigned char* data,
     const std::size_t data_size,
