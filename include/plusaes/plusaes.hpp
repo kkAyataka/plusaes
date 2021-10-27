@@ -509,7 +509,7 @@ inline Block mul_blocks(const Block X, const Block Y) {
 }
 
 /** Algorithm 2 @private */
-inline Block ghash(const Block& H, const std::vector<unsigned char> X) {
+inline Block ghash(const Block & H, const std::vector<unsigned char> & X) {
     const unsigned long m = X.size() / kBlockByteSize;
     Block Ym;
     for (std::size_t i = 0; i < m; ++i) {
@@ -521,7 +521,7 @@ inline Block ghash(const Block& H, const std::vector<unsigned char> X) {
 }
 
 template<std::size_t N>
-std::bitset<N> make_bitset(const unsigned char *bytes, const std::size_t bytes_size) {
+std::bitset<N> make_bitset(const unsigned char * bytes, const std::size_t bytes_size) {
     std::bitset<N> bits;
     for (int i = 0; i < bytes_size; ++i) {
         bits <<= 8;
@@ -531,7 +531,7 @@ std::bitset<N> make_bitset(const unsigned char *bytes, const std::size_t bytes_s
 }
 
 /** Algorithm 3 @private */
-inline std::vector<unsigned char> gctr(const detail::RoundKeys &rkeys, const Block &ICB, const unsigned char *X, const unsigned long X_size){
+inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Block & ICB, const unsigned char * X, const unsigned long X_size){
     if (!X || X_size == 0) {
         return std::vector<unsigned char>();
     }
