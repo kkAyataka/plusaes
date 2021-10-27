@@ -591,13 +591,20 @@ inline Block calc_H(const RoundKeys & rkeys) {
     return gcm::Block(H_raw);
 }
 
-inline Block calc_J0(const unsigned char * iv, const std::size_t iv_size) {
+inline Block calc_J0(const Block & H, const unsigned char * iv, const std::size_t iv_size) {
     if (iv_size == 12) {
         const std::bitset<96> iv_bits = gcm::make_bitset<96>(iv, iv_size);
         return iv_bits || std::bitset<31>() || std::bitset<1>(1);
     }
     else {
-        return Block();
+        const auto len_iv = iv_size * 8;
+        const auto s = 128 * gcm::ceil(len_iv / 128.0) - len_iv;
+        std::vector<unsigned char> ghash_in;
+        gcm::push_back(ghash_in, iv, iv_size);
+        gcm::push_back_zero_bits(ghash_in, s + 64);
+        gcm::push_back(ghash_in, std::bitset<64>(len_iv));
+
+        return gcm::ghash(H, ghash_in);
     }
 }
 
@@ -734,7 +741,7 @@ inline Error calc_gcm_tag(
 
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
     const gcm::Block H = gcm::calc_H(rkeys);
-    const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
 
     const unsigned long lenC = data_size * 8;
     const unsigned long lenA = aadata_size * 8;
@@ -772,7 +779,8 @@ inline Error crypt_gcm(
     using detail::gcm::operator||;
 
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-    const gcm::Block J0 = gcm::calc_J0(iv, iv_size);
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
 
     const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
 
