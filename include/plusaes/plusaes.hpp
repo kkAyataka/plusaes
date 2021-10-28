@@ -608,6 +608,67 @@ inline Block calc_J0(const Block & H, const unsigned char * iv, const std::size_
     }
 }
 
+inline void calc_gcm_tag(
+    const unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    unsigned char * tag,
+    const std::size_t tag_size
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
+
+    const unsigned long lenC = data_size * 8;
+    const unsigned long lenA = aadata_size * 8;
+    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
+    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
+
+    std::vector<unsigned char> ghash_in;
+    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
+    gcm::push_back(ghash_in, aadata, aadata_size);
+    gcm::push_back_zero_bits(ghash_in, v);
+    gcm::push_back(ghash_in, data, data_size);
+    gcm::push_back_zero_bits(ghash_in, u);
+    gcm::push_back(ghash_in, std::bitset<64>(lenA));
+    gcm::push_back(ghash_in, std::bitset<64>(lenC));
+    const gcm::Block S = gcm::ghash(H, ghash_in);
+    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
+
+    // return
+    memcpy(tag, &T[0], (std::min)(tag_size, 16ul));
+}
+
+/** Algorithm 4 and 5 @private */
+inline void crypt_gcm(
+    const unsigned char* data,
+    const std::size_t data_size,
+    const unsigned char* key,
+    const std::size_t key_size,
+    const unsigned char* iv,
+    const std::size_t iv_size,
+    unsigned char* crypted
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
+
+    const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
+
+    memcpy(crypted, &C[0], data_size);
+}
+
 } // namespce detail::gcm
 
 } // namespace detail
@@ -645,6 +706,7 @@ typedef enum {
     kErrorInvalidBufferSize,
     kErrorInvalidKey,
     kErrorInvalidNonceSize,
+    kErrorInvalidTagSize,
     kErrorInvalidTag
 } Error;
 
@@ -725,66 +787,21 @@ inline bool check_padding(const unsigned long padding, const unsigned char data[
     return true;
 }
 
-inline Error calc_gcm_tag(
-    const unsigned char * data,
-    const std::size_t data_size,
-    const unsigned char * aadata,
-    const std::size_t aadata_size,
-    const unsigned char * key,
+inline Error check_gcm_cond(
     const std::size_t key_size,
-    const unsigned char * iv,
-    const std::size_t iv_size,
-    unsigned char (*tag)[16]
+    const std::size_t tag_size
 ) {
-    using namespace detail;
-    using detail::gcm::operator||;
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return kErrorInvalidKeySize;
+    }
 
-    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-    const gcm::Block H = gcm::calc_H(rkeys);
-    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
-
-    const unsigned long lenC = data_size * 8;
-    const unsigned long lenA = aadata_size * 8;
-    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
-    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
-
-    std::vector<unsigned char> ghash_in;
-    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
-    gcm::push_back(ghash_in, aadata, aadata_size);
-    gcm::push_back_zero_bits(ghash_in, v);
-    gcm::push_back(ghash_in, data, data_size);
-    gcm::push_back_zero_bits(ghash_in, u);
-    gcm::push_back(ghash_in, std::bitset<64>(lenA));
-    gcm::push_back(ghash_in, std::bitset<64>(lenC));
-    const gcm::Block S = gcm::ghash(H, ghash_in);
-    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
-
-    // return
-    memcpy(*tag, &T[0], 16);
-
-    return kErrorOk;
-}
-
-/** Algorithm 4 and 5 @private */
-inline Error crypt_gcm(
-    const unsigned char* data,
-    const std::size_t data_size,
-    const unsigned char* key,
-    const std::size_t key_size,
-    const unsigned char* iv,
-    const std::size_t iv_size,
-    unsigned char* crypted
-) {
-    using namespace detail;
-    using detail::gcm::operator||;
-
-    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
-    const gcm::Block H = gcm::calc_H(rkeys);
-    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
-
-    const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
-
-    memcpy(crypted, &C[0], data_size);
+    // check tag size
+    if ((tag_size < 12 && 16 < tag_size) &&
+        (tag_size != 8) &&
+        (tag_size != 4)) {
+        return kErrorInvalidTagSize;
+    }
 
     return kErrorOk;
 }
@@ -1053,66 +1070,143 @@ inline Error decrypt_cbc(
     return kErrorOk;
 }
 
-/** @defgroup GCM GMC
+/** @defgroup GCM GCM
  * GCM mode
  * @{ */
 
 /**
- * Eecrypts with GCM mode and generates tag.
+ * Encrypts data with GCM mode, and get authentication tag.
+ *
+ * You can specify iv size and tag size.
+ * Buy usually you should use plusaes::encrypt_gcm
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidTagSize
  */
 inline Error encrypt_gcm(
-    const unsigned char * data,
-    const unsigned long data_size,
+    unsigned char * data,
+    const std::size_t data_size,
     const unsigned char * aadata,
-    const unsigned long aadata_size,
+    const std::size_t aadata_size,
     const unsigned char * key,
-    const unsigned long key_size,
+    const std::size_t key_size,
     const unsigned char * iv,
-    const unsigned int iv_size,
-    unsigned char * encrypted,
-    unsigned char (*tag)[16]
+    const std::size_t iv_size,
+    unsigned char * tag,
+    const std::size_t tag_size
 ) {
-    std::vector<unsigned char> C(data_size);
-    const Error err = detail::crypt_gcm(data, data_size, key, key_size, iv, iv_size, &C[0]);
-    if (err == kErrorOk) {
-        detail::calc_gcm_tag(&C[0], C.size(), aadata, aadata_size, key, key_size, iv, iv_size, tag);
-        memcpy(encrypted, &C[0], C.size());
+    const Error err = detail::check_gcm_cond(key_size, tag_size);
+    if (err != kErrorOk) {
+        return err;
     }
 
-    return err;
+    detail::gcm::crypt_gcm(data, data_size, key, key_size, iv, iv_size, data);
+    detail::gcm::calc_gcm_tag(data, data_size, aadata, aadata_size, key, key_size, iv, iv_size, tag, tag_size);
+
+    return kErrorOk;
 }
 
 /**
- * Decrypts with GCM mode and checks tag.
+ * Encrypts data with GCM mode.
+ *
+ * @param data [in,out] Input data and output buffer.
+ *      This buffer is replaced with encrypted data.
+ * @param data_size [in] data size
+ * @param aadata [in] Additional Authenticated data
+ * @param aadata_size [in] aadata size
+ * @param key [in] Cipher key
+ * @param key_size [in] Ciper key size. This value must be 16, 24, or 32.
+ * @param iv [in] Initialization vector
+ * @param tag [out] Calculated authentication tag data
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
  */
-inline Error decrypt_gcm(
-    const unsigned char * data,
+inline Error encrypt_gcm(
+    unsigned char * data,
     const unsigned long data_size,
     const unsigned char * aadata,
     const unsigned long aadata_size,
     const unsigned char * key,
     const unsigned long key_size,
-    const unsigned char * iv,
-    const unsigned int iv_size,
-    unsigned char* decrypted,
-    const unsigned char(*tag)[16]
+    const unsigned char (*iv)[12],
+    unsigned char (*tag)[16]
 ) {
-    const unsigned char * C = data;
-    const unsigned long C_size = data_size;
-    unsigned char tagd[16] = {};
-    detail::calc_gcm_tag(C, C_size, aadata, aadata_size, key, key_size, iv, iv_size, &tagd);
+    return encrypt_gcm(data, data_size, aadata, aadata_size, key, key_size, *iv, 12, *tag, 16);
+}
 
-    if (memcmp(tag, tagd, 16) != 0) {
+/**
+ * Decrypts data with GCM mode, and checks tag.
+ *
+ * You can specify iv size and tag size.
+ * Buy usually you should use plusaes::decrypt_gcm
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidTagSize
+ * @returns kErrorInvalidTag
+ */
+inline Error decrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    const unsigned char * tag,
+    const std::size_t tag_size
+) {
+    const Error err = detail::check_gcm_cond(key_size, tag_size);
+    if (err != kErrorOk) {
+        return err;
+    }
+
+    unsigned char * C = data;
+    unsigned long C_size = data_size;
+    unsigned char tagd[16] = {};
+    detail::gcm::calc_gcm_tag(C, C_size, aadata, aadata_size, key, key_size, iv, iv_size, tagd, 16);
+
+    if (memcmp(tag, tagd, tag_size) != 0) {
         return kErrorInvalidTag;
     }
     else {
-        std::vector<unsigned char> P(data_size);
-        const Error err = detail::crypt_gcm(data, data_size, key, key_size, iv, iv_size, &P[0]);
-        if (err == kErrorOk) {
-            memcpy(decrypted, &P[0], P.size());
-        }
-        return err;
+        detail::gcm::crypt_gcm(C, C_size, key, key_size, iv, iv_size, C);
+
+        return kErrorOk;
     }
+}
+
+/**
+ * Encrypts data with GCM mode.
+ *
+ * @param data [in,out] Input (encrypted) data and output (decrepted data) buffer.
+ *      This buffer is replaced with decrypted data.
+ * @param data_size [in] data size
+ * @param aadata [in] Additional Authenticated data
+ * @param aadata_size [in] aadata size
+ * @param key [in] Cipher key
+ * @param key_size [in] Ciper key size. This value must be 16, 24, or 32.
+ * @param iv [in] Initialization vector
+ * @param tag [out] Calculated authentication tag data
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidTag
+ */
+inline Error decrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char (*iv)[12],
+    const unsigned char (*tag)[16]
+) {
+    return decrypt_gcm(data, data_size, aadata, aadata_size, key, key_size, *iv, 12, *tag, 16);
 }
 
 /** @} */
