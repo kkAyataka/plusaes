@@ -82,6 +82,19 @@ INSTANTIATE_TEST_SUITE_P(
     GcmCryptTest,
     testing::Values(
         GcmTestParam(
+            "Case1",
+            DATA_T(hs2b("")),
+            AADATA_T(hs2b("")),
+            KEY_T(hs2b(
+                "00000000000000000000000000000000")),
+            IV_T(hs2b(
+                "000000000000000000000000")),
+            OK_ENCRYPTED_T(hs2b(
+                "")),
+            OK_TAG_T(hs2b(
+                "58e2fccefa7e3061367f1d57a4e7455a"))
+        ),
+        GcmTestParam(
             "Case3",
             DATA_T(hs2b(
                 "d9313225f88406e5a55909c5aff5269a"
@@ -591,7 +604,192 @@ INSTANTIATE_TEST_SUITE_P(
                 "a4a1efcaabb9380cb371112f7f9ccf67")),
             OK_TAG_T(hs2b(
                 "3992de4884d5d2d4824681e59091b9fe"))
+        ),
+        GcmTestParam(
+            "SmallTag",
+            DATA_T(hs2b(
+                "e5f8d69dfc5c4a3528a0586be4e865d6"
+                "0f7cbeb30bb2323fb984fd995213cee8")),
+            AADATA_T(hs2b(
+                "869d73840e708145536e773fff21b09a"
+                "601f436a07970626bc146aa2f7f13e14"
+                "8b3277d32c2b4510ab3ab7355aff2a03"
+                "649e4d02755663453df228f2e3a4bd32"
+                "d3")),
+            KEY_T(hs2b(
+                "02fc5b6394f1b24c73cc3da6d4453659"
+                "fc4150eaa1918716078ce15cc3fbd19f")),
+            IV_T(hs2b(
+                "4483eac0f25a07379f258e1296d089f0"
+                "3d5a82825ccf80e76646164498624581"
+                "9b")),
+            OK_ENCRYPTED_T(hs2b(
+                "a087aae7b4fd98129d01ce568a615ad7"
+                "a4a1efcaabb9380cb371112f7f9ccf67")),
+            OK_TAG_T(hs2b(
+                "3992de4884d5d2d4824681e590"))
         )
     ),
     testing::PrintToStringParamName()
+);
+
+
+//------------------------------------------------------------------------------
+// Fixed iv and tag size API
+//------------------------------------------------------------------------------
+
+class GcmFixedCryptTest : public testing::TestWithParam<GcmTestParam> {
+};
+
+TEST_P(GcmFixedCryptTest, encrypt_decript) {
+    auto p = GetParam();
+    unsigned char iv[12] = {};
+    memcpy(iv, &p.iv[0], 12);
+    unsigned char tag[16] = {};
+
+    plusaes::Error err = plusaes::kErrorOk;
+    const std::vector<unsigned char> P = p.data;
+
+    // Encrypt
+    err = plusaes::encrypt_gcm(
+        &p.data[0], p.data.size(),
+        (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
+        &p.key[0], p.key.size(),
+        &iv,
+        &tag);
+
+    EXPECT_EQ(err, plusaes::kErrorOk);
+    EXPECT_EQ(memcmp(&p.data[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
+    EXPECT_EQ(memcmp(tag, &p.ok_tag[0], p.ok_tag.size()), 0);
+
+    // Decrypt
+    err = plusaes::decrypt_gcm(
+        &p.data[0], p.data.size(),
+        (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
+        &p.key[0], p.key.size(),
+        &iv,
+        &tag);
+
+    EXPECT_EQ(err, plusaes::kErrorOk);
+    EXPECT_EQ(memcmp(&p.data[0], &P[0], p.data.size()), 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FixedSizeIvTag,
+    GcmFixedCryptTest,
+    testing::Values(
+        GcmTestParam(
+            "P1",
+            DATA_T(hs2b(
+                "7aaaeeca0c61b8b4f217095d974b4c1d")),
+            AADATA_T(hs2b(
+                "e778698186a6f2c955fdcf6e4febd5aa")),
+            KEY_T(hs2b(
+                "292e34e3d951bb876a3b06c58df76797")),
+            IV_T(hs2b(
+                "eb66e10e80d82014ba9cb67a")),
+            OK_ENCRYPTED_T(hs2b(
+                "8646ceb5537e35b9598902684ee348d9")),
+            OK_TAG_T(hs2b(
+                "9dd18f9ba63097f2c9defa9b7f7c6ec4"))
+        ),
+        GcmTestParam(
+            "P2",
+            DATA_T(hs2b("")),
+            AADATA_T(hs2b(
+                "2434da4edb6bef539f51515876f7e5f0"
+                "a026")),
+            KEY_T(hs2b(
+                "3b789cea1f537cb053e3da2eb334ab8e"
+                "f982f560e880d126")),
+            IV_T(hs2b(
+                "37dea97f367c71bf5fb067a2")),
+            OK_ENCRYPTED_T(hs2b("")),
+            OK_TAG_T(hs2b(
+                "7b03a7fc1855881987128ffa3d105ecb"))
+        ),
+        GcmTestParam(
+            "P3",
+            DATA_T(hs2b(
+                "c9195de652b930")),
+            AADATA_T(hs2b(
+                "5c6f0be07df4b73a2166c5167f2a0552"
+                "bf61d928155a7546585f1a98419e37ae"
+                "b6c9a8100fcd62decf3a990095d7c34d"
+                "9fed136b876fe0a3ae4960b974394e3c"
+                "85")),
+            KEY_T(hs2b(
+                "d48145afc036de912b1418137c0f2fd5"
+                "c4e782281ef81a93")),
+            IV_T(hs2b(
+                "d7e3a954d8edf82e16a12e80")),
+            OK_ENCRYPTED_T(hs2b(
+                "0d251613cd2463")),
+            OK_TAG_T(hs2b(
+                "837376209d5fdb7a2504042a354a38e0"))
+        )
+    ),
+    testing::PrintToStringParamName()
+);
+
+//------------------------------------------------------------------------------
+// Errors
+//------------------------------------------------------------------------------
+
+class GcmInvalidSizeTestParam {
+public:
+    std::size_t key_size;
+    std::size_t iv_size;
+    std::size_t tag_size;
+    plusaes::Error ok_error;
+};
+
+class GcmInvalidSizeTest : public testing::TestWithParam<GcmInvalidSizeTestParam> {
+};
+
+TEST_P(GcmInvalidSizeTest, invalid_size) {
+    const auto p = GetParam();
+
+    auto data = hs2b("00000000000000000000000000000000");
+    const auto aad = hs2b("");
+    const auto key = hs2b("00000000000000000000000000000000");
+    const auto iv = hs2b("000000000000000000000000");
+    unsigned char tag[16] = {};
+
+    const auto ctag = hs2b("ab6e47d42cec13bdf53a67b21257bddf");
+    const auto encrypted = hs2b("0388dace60b6a392f328c2b971b2fe78");
+
+    const auto err = plusaes::encrypt_gcm(&data[0], data.size(), &aad[0], aad.size(),
+                                          &key[0], p.key_size, &iv[0], p.iv_size, tag, p.tag_size);
+    EXPECT_EQ(err, p.ok_error);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    InvalidSize,
+    GcmInvalidSizeTest,
+    testing::Values(
+        GcmInvalidSizeTestParam{0, 12, 16, plusaes::kErrorInvalidKeySize},
+        GcmInvalidSizeTestParam{16, 0, 16, plusaes::kErrorInvalidIvSize},
+        GcmInvalidSizeTestParam{16, 1, 16, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 2, 16, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 0, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 1, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 2, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 3, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 4, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 5, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 6, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 7, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 8, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 9, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 10, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 11, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 12, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 13, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 14, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 15, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 16, plusaes::kErrorOk},
+        GcmInvalidSizeTestParam{16, 12, 17, plusaes::kErrorInvalidTagSize},
+        GcmInvalidSizeTestParam{16, 12, 18, plusaes::kErrorInvalidTagSize}
+    )
 );
