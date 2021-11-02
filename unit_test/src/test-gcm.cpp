@@ -20,23 +20,6 @@ struct GcmTestParam {
     uchar_vec iv;
     uchar_vec ok_encrypted;
     uchar_vec ok_tag;
-
-    GcmTestParam(
-        const std::string & desc,
-        const uchar_vec & data,
-        const uchar_vec & aadata,
-        const uchar_vec & key,
-        const uchar_vec & iv,
-        const uchar_vec & ok_encrypted,
-        const uchar_vec & ok_tag
-    ) : desc(desc),
-        data(data),
-        aadata(aadata),
-        key(key),
-        iv(iv),
-        ok_encrypted(ok_encrypted),
-        ok_tag(ok_tag) {
-    }
 };
 
 std::ostream& operator<<(std::ostream& stream, const GcmTestParam & p) {
@@ -81,7 +64,7 @@ INSTANTIATE_TEST_SUITE_P(
     DocDef,
     GcmCryptTest,
     testing::Values(
-        GcmTestParam(
+        GcmTestParam{
             "Case1",
             DATA_T(hs2b("")),
             AADATA_T(hs2b("")),
@@ -93,8 +76,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "")),
             OK_TAG_T(hs2b(
                 "58e2fccefa7e3061367f1d57a4e7455a"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "Case3",
             DATA_T(hs2b(
                 "d9313225f88406e5a55909c5aff5269a"
@@ -113,8 +96,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "1ba30b396a0aac973d58e091473f5985")),
             OK_TAG_T(hs2b(
                 "4d5c2af327cd64a62cf35abd2ba6fab4"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "Case5",
             DATA_T(hs2b(
                 "d9313225f88406e5a55909c5aff5269a"
@@ -135,8 +118,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "4989b5e1ebac0f07c23f4598")),
             OK_TAG_T(hs2b(
                 "3612d2e79e3b0785561be14aaca2fccb"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "Case6",
             DATA_T(hs2b(
                 "d9313225f88406e5a55909c5aff5269a"
@@ -160,7 +143,7 @@ INSTANTIATE_TEST_SUITE_P(
                 "d62875d2aca417034c34aee5")),
             OK_TAG_T(hs2b(
                 "619cc5aefffe0bfa462af43c1699d050"))
-        )
+        }
     ),
     testing::PrintToStringParamName()
 );
@@ -169,7 +152,7 @@ INSTANTIATE_TEST_SUITE_P(
     LenCombo,
     GcmCryptTest,
     testing::Values(
-        GcmTestParam(
+        GcmTestParam{
             "k16d0iv16aad0",
             DATA_T(hs2b("")),
             AADATA_T(hs2b("")),
@@ -180,8 +163,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "2b59f12a50e2168de0e4b2851f50b3c9"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k16d7iv33aad16",
             DATA_T(hs2b(
                 "3459a93fb51b30")),
@@ -197,8 +180,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "48e5e752f0b5ca")),
             OK_TAG_T(hs2b(
                 "7c789ba46e8208e9d9791d29fcfc12c0"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k16d16iv12aad16",
             DATA_T(hs2b(
                 "315de0d84154256d11c90a14b48f9ced")),
@@ -212,8 +195,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "a6fd641c1600f581f27bbdc16367506d")),
             OK_TAG_T(hs2b(
                 "54b72ae3b09185c25e569f084d14b69a"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k16d17iv10aad11",
             DATA_T(hs2b(
                 "a4f93362a6223301cf2a6b17e9c5c2da"
@@ -229,8 +212,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "b6")),
             OK_TAG_T(hs2b(
                 "f67cf5887f274009a8efe9c03779c365"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k16d17iv16aad65",
             DATA_T(hs2b(
                 "3bb26b2156fb346a58ae45b1181a845d"
@@ -250,8 +233,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "72")),
             OK_TAG_T(hs2b(
                 "1b319f12cdef2596a6c55503cfc1a889"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k16d32iv33aad18",
             DATA_T(hs2b(
                 "6ba4ec4fbc8437364f2b602fb22419ca"
@@ -270,8 +253,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "4b9ed9bf9c3e2e3b9986c1da03870500")),
             OK_TAG_T(hs2b(
                 "3f82f1c7a010d4854a1f8c9180bc5fda"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d0iv10aad16",
             DATA_T(hs2b("")),
             AADATA_T(hs2b(
@@ -284,8 +267,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "0886f357fad5acdcd2717b93efcee00c"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d0iv12aad18",
             DATA_T(hs2b("")),
             AADATA_T(hs2b(
@@ -299,8 +282,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "1b2baaaee9cb855d9f22d35a8384acc7"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d0iv33aad11",
             DATA_T(hs2b("")),
             AADATA_T(hs2b(
@@ -315,8 +298,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "54dad874625afb9e3f575a914730763d"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d7iv10aad0",
             DATA_T(hs2b(
                 "9bfda82c728385")),
@@ -330,8 +313,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "29af06288965a2")),
             OK_TAG_T(hs2b(
                 "e6d3eac7bc9199957d561e0d6f748c88"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d7iv12aad65",
             DATA_T(hs2b(
                 "705c7987a15e7e")),
@@ -350,8 +333,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "0ae564a577a3d8")),
             OK_TAG_T(hs2b(
                 "5ede3e0a808586f7c2a137a38917b9d5"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d7iv16aad11",
             DATA_T(hs2b(
                 "9e364f05e802bb")),
@@ -366,8 +349,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "68ea75387f0412")),
             OK_TAG_T(hs2b(
                 "c164672923302bad8b8f5ff5eab82ec1"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d16iv10aad65",
             DATA_T(hs2b(
                 "4adc49c25e816681d7d78cef669aa8f5")),
@@ -386,8 +369,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "863550b7427dcd5eff3e8bd4327acf9d")),
             OK_TAG_T(hs2b(
                 "2c043c23afc7c69174b2e91ded975d7b"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d16iv16aad18",
             DATA_T(hs2b(
                 "4703ee7d56654e93200164bbd36b6d0d")),
@@ -403,8 +386,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "e587332b6d9cb7f65e4556d2d6ff6a71")),
             OK_TAG_T(hs2b(
                 "996786d391cfc1763e5c32b0f8c1fe38"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d16iv33aad0",
             DATA_T(hs2b(
                 "809fe0ff16ad989956750741fb3c9d53")),
@@ -420,8 +403,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "81902cbae28004e77e56d05ea8f9127a")),
             OK_TAG_T(hs2b(
                 "06a5cf6f0843d87c42b337fc5599ea7b"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d17iv12aad16",
             DATA_T(hs2b(
                 "7fd84ad0e85a1a1c21bcae28b1b8b7ef"
@@ -438,8 +421,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "d7")),
             OK_TAG_T(hs2b(
                 "01ae70706c733a8555b6da99190ef01c"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d17iv16aad18",
             DATA_T(hs2b(
                 "102e12afaca774dd0071b9f206d869e9"
@@ -457,8 +440,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "04")),
             OK_TAG_T(hs2b(
                 "0484cc785199858e1db93c13bde93238"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d32iv10aad11",
             DATA_T(hs2b(
                 "ede4b04d79bd671674b505b910129166"
@@ -475,8 +458,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "b35621d3ad7e4ac25247248cd95a3572")),
             OK_TAG_T(hs2b(
                 "0f0b3c1b00d8aaf1f76480dbd2a59372"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k24d32iv12aad0",
             DATA_T(hs2b(
                 "72f3bff273bf59b96f7eaa882ca5c816"
@@ -492,8 +475,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "b4680ffac01524177b52896014aa1cbb")),
             OK_TAG_T(hs2b(
                 "7ac0f98534c8afb92a2f98180bf66597"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d0iv12aad65",
             DATA_T(hs2b("")),
             AADATA_T(hs2b(
@@ -510,8 +493,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "adfbeaf877fb13f00d41bead5423dd03"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d7iv10aad18",
             DATA_T(hs2b(
                 "e79b4af7976531")),
@@ -527,8 +510,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "ba3fab0fdded51")),
             OK_TAG_T(hs2b(
                 "c917e3d32c36e23f8b4f33200a868599"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d16iv12aad11",
             DATA_T(hs2b(
                 "16ee82682068343a6d6309d3c55dc2e6")),
@@ -543,8 +526,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "ec68bffcd69a005fef9426c8615d2fcc")),
             OK_TAG_T(hs2b(
                 "6dd8cc86df717444f3043438778eea7e"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d17iv33aad0",
             DATA_T(hs2b(
                 "d7b17105f31e51f388b586ccda6ddf68"
@@ -562,8 +545,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "83")),
             OK_TAG_T(hs2b(
                 "2f4c1f269e8d84f919ec1610ffbdad4f"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d32iv16aad16",
             DATA_T(hs2b(
                 "a6b9a2b6a8ac93807341a3dd2c32d84c"
@@ -580,8 +563,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "7fbdd138aff75783324897da7b743ce3")),
             OK_TAG_T(hs2b(
                 "96f5ec7fdf5b07bd1992a67f07ee290f"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "k32d32iv33aad65",
             DATA_T(hs2b(
                 "e5f8d69dfc5c4a3528a0586be4e865d6"
@@ -604,8 +587,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "a4a1efcaabb9380cb371112f7f9ccf67")),
             OK_TAG_T(hs2b(
                 "3992de4884d5d2d4824681e59091b9fe"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "SmallTag",
             DATA_T(hs2b(
                 "e5f8d69dfc5c4a3528a0586be4e865d6"
@@ -628,7 +611,7 @@ INSTANTIATE_TEST_SUITE_P(
                 "a4a1efcaabb9380cb371112f7f9ccf67")),
             OK_TAG_T(hs2b(
                 "3992de4884d5d2d4824681e590"))
-        )
+        }
     ),
     testing::PrintToStringParamName()
 );
@@ -678,7 +661,7 @@ INSTANTIATE_TEST_SUITE_P(
     FixedSizeIvTag,
     GcmFixedCryptTest,
     testing::Values(
-        GcmTestParam(
+        GcmTestParam{
             "P1",
             DATA_T(hs2b(
                 "7aaaeeca0c61b8b4f217095d974b4c1d")),
@@ -692,8 +675,8 @@ INSTANTIATE_TEST_SUITE_P(
                 "8646ceb5537e35b9598902684ee348d9")),
             OK_TAG_T(hs2b(
                 "9dd18f9ba63097f2c9defa9b7f7c6ec4"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "P2",
             DATA_T(hs2b("")),
             AADATA_T(hs2b(
@@ -707,8 +690,8 @@ INSTANTIATE_TEST_SUITE_P(
             OK_ENCRYPTED_T(hs2b("")),
             OK_TAG_T(hs2b(
                 "7b03a7fc1855881987128ffa3d105ecb"))
-        ),
-        GcmTestParam(
+        },
+        GcmTestParam{
             "P3",
             DATA_T(hs2b(
                 "c9195de652b930")),
@@ -727,7 +710,7 @@ INSTANTIATE_TEST_SUITE_P(
                 "0d251613cd2463")),
             OK_TAG_T(hs2b(
                 "837376209d5fdb7a2504042a354a38e0"))
-        )
+        }
     ),
     testing::PrintToStringParamName()
 );
