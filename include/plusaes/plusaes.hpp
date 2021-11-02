@@ -706,6 +706,7 @@ typedef enum {
     kErrorInvalidBufferSize,
     kErrorInvalidKey,
     kErrorInvalidNonceSize,
+    kErrorInvalidIvSize,
     kErrorInvalidTagSize,
     kErrorInvalidTag
 } Error;
@@ -789,6 +790,7 @@ inline bool check_padding(const unsigned long padding, const unsigned char data[
 
 inline Error check_gcm_cond(
     const std::size_t key_size,
+    const std::size_t iv_size,
     const std::size_t tag_size
 ) {
     // check key size
@@ -796,8 +798,12 @@ inline Error check_gcm_cond(
         return kErrorInvalidKeySize;
     }
 
+    if (iv_size < 1) {
+        return kErrorInvalidIvSize;
+    }
+
     // check tag size
-    if ((tag_size < 12 && 16 < tag_size) &&
+    if ((tag_size < 12 || 16 < tag_size) &&
         (tag_size != 8) &&
         (tag_size != 4)) {
         return kErrorInvalidTagSize;
@@ -1082,6 +1088,7 @@ inline Error decrypt_cbc(
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidIvSize
  * @returns kErrorInvalidTagSize
  */
 inline Error encrypt_gcm(
@@ -1096,7 +1103,7 @@ inline Error encrypt_gcm(
     unsigned char * tag,
     const std::size_t tag_size
 ) {
-    const Error err = detail::check_gcm_cond(key_size, tag_size);
+    const Error err = detail::check_gcm_cond(key_size, iv_size, tag_size);
     if (err != kErrorOk) {
         return err;
     }
@@ -1140,10 +1147,11 @@ inline Error encrypt_gcm(
  * Decrypts data with GCM mode, and checks tag.
  *
  * You can specify iv size and tag size.
- * Buy usually you should use plusaes::decrypt_gcm
+ * But usually you should use plusaes::decrypt_gcm
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidIvSize
  * @returns kErrorInvalidTagSize
  * @returns kErrorInvalidTag
  */
@@ -1159,7 +1167,7 @@ inline Error decrypt_gcm(
     const unsigned char * tag,
     const std::size_t tag_size
 ) {
-    const Error err = detail::check_gcm_cond(key_size, tag_size);
+    const Error err = detail::check_gcm_cond(key_size, iv_size, tag_size);
     if (err != kErrorOk) {
         return err;
     }
