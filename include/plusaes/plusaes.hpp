@@ -542,7 +542,7 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Bl
         Block CB;
         for (std::size_t i = 0; i < n; ++i) {
             // CB
-            if (i == 0) { // fitst
+            if (i == 0) { // first
                 CB = ICB;
             }
             else {
