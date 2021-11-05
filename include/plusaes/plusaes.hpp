@@ -336,7 +336,7 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
     return key;
 }
 
-inline bool is_valid_key_size(const unsigned long key_size) {
+inline bool is_valid_key_size(const std::size_t key_size) {
     if (key_size != 16 && key_size != 24 && key_size != 32) {
         return false;
     }
@@ -511,7 +511,7 @@ inline Block mul_blocks(const Block X, const Block Y) {
 
 /** Algorithm 2 @private */
 inline Block ghash(const Block & H, const std::vector<unsigned char> & X) {
-    const unsigned long m = X.size() / kBlockByteSize;
+    const std::size_t m = X.size() / kBlockByteSize;
     Block Ym;
     for (std::size_t i = 0; i < m; ++i) {
         const Block Xi(&X[i * kBlockByteSize], kBlockByteSize);
@@ -524,7 +524,7 @@ inline Block ghash(const Block & H, const std::vector<unsigned char> & X) {
 template<std::size_t N>
 std::bitset<N> make_bitset(const unsigned char * bytes, const std::size_t bytes_size) {
     std::bitset<N> bits;
-    for (int i = 0; i < bytes_size; ++i) {
+    for (auto i = 0u; i < bytes_size; ++i) {
         bits <<= 8;
         bits |= bytes[i];
     }
@@ -532,7 +532,7 @@ std::bitset<N> make_bitset(const unsigned char * bytes, const std::size_t bytes_
 }
 
 /** Algorithm 3 @private */
-inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Block & ICB, const unsigned char * X, const unsigned long X_size){
+inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Block & ICB, const unsigned char * X, const std::size_t X_size){
     if (!X || X_size == 0) {
         return std::vector<unsigned char>();
     }
@@ -570,18 +570,18 @@ inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Bl
     }
 }
 
-inline void push_back(std::vector<unsigned char> & bytes, const unsigned char * data, const unsigned long data_size) {
+inline void push_back(std::vector<unsigned char> & bytes, const unsigned char * data, const std::size_t data_size) {
     bytes.insert(bytes.end(), data, data + data_size);
 }
 
 inline void push_back(std::vector<unsigned char> & bytes, const std::bitset<64> & bits) {
     const std::bitset<64> mask(0xFF); // 1 byte mask
     for (std::size_t i = 0; i < 8; ++i) {
-        bytes.push_back(((bits >> ((7 - i) * 8)) & mask).to_ulong());
+        bytes.push_back(static_cast<unsigned char>(((bits >> ((7 - i) * 8)) & mask).to_ulong()));
     }
 }
 
-inline void push_back_zero_bits(std::vector<unsigned char>& bytes, const unsigned long zero_bits_size) {
+inline void push_back_zero_bits(std::vector<unsigned char>& bytes, const std::size_t zero_bits_size) {
     const std::vector<unsigned char> zero_bytes(zero_bits_size / 8);
     bytes.insert(bytes.end(), zero_bytes.begin(), zero_bytes.end());
 }
@@ -628,8 +628,8 @@ inline void calc_gcm_tag(
     const gcm::Block H = gcm::calc_H(rkeys);
     const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
 
-    const unsigned long lenC = data_size * 8;
-    const unsigned long lenA = aadata_size * 8;
+    const auto lenC = data_size * 8;
+    const auto lenA = aadata_size * 8;
     const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
     const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
 
@@ -1176,7 +1176,7 @@ inline Error decrypt_gcm(
     }
 
     unsigned char * C = data;
-    unsigned long C_size = data_size;
+    const auto C_size = data_size;
     unsigned char tagd[16] = {};
     detail::gcm::calc_gcm_tag(C, C_size, aadata, aadata_size, key, key_size, iv, iv_size, tagd, 16);
 
