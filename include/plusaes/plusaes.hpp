@@ -1077,14 +1077,14 @@ inline Error decrypt_cbc(
 }
 
 /** @defgroup GCM GCM
- * GCM mode
+ * GCM mode functions
  * @{ */
 
 /**
- * Encrypts data with GCM mode, and get authentication tag.
+ * Encrypts data with GCM mode and gets an authentication tag.
  *
  * You can specify iv size and tag size.
- * Buy usually you should use plusaes::encrypt_gcm
+ * But usually you should use the other overloaded function whose iv and tag size is fixed.
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
@@ -1115,7 +1115,7 @@ inline Error encrypt_gcm(
 }
 
 /**
- * Encrypts data with GCM mode.
+ * Encrypts data with GCM mode and gets an authentication tag.
  *
  * @param data [in,out] Input data and output buffer.
  *      This buffer is replaced with encrypted data.
@@ -1123,7 +1123,7 @@ inline Error encrypt_gcm(
  * @param aadata [in] Additional Authenticated data
  * @param aadata_size [in] aadata size
  * @param key [in] Cipher key
- * @param key_size [in] Ciper key size. This value must be 16, 24, or 32.
+ * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
  * @param iv [in] Initialization vector
  * @param tag [out] Calculated authentication tag data
  *
@@ -1132,11 +1132,11 @@ inline Error encrypt_gcm(
  */
 inline Error encrypt_gcm(
     unsigned char * data,
-    const unsigned long data_size,
+    const std::size_t data_size,
     const unsigned char * aadata,
-    const unsigned long aadata_size,
+    const std::size_t aadata_size,
     const unsigned char * key,
-    const unsigned long key_size,
+    const std::size_t key_size,
     const unsigned char (*iv)[12],
     unsigned char (*tag)[16]
 ) {
@@ -1144,10 +1144,10 @@ inline Error encrypt_gcm(
 }
 
 /**
- * Decrypts data with GCM mode, and checks tag.
+ * Decrypts data with GCM mode and checks an authentication tag.
  *
  * You can specify iv size and tag size.
- * But usually you should use plusaes::decrypt_gcm
+ * But usually you should use the other overloaded function whose iv and tag size is fixed.
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
@@ -1188,15 +1188,15 @@ inline Error decrypt_gcm(
 }
 
 /**
- * Encrypts data with GCM mode.
+ * Decrypts data with GCM mode and checks an authentication tag.
  *
- * @param data [in,out] Input (encrypted) data and output (decrepted data) buffer.
+ * @param data [in,out] Input data and output buffer.
  *      This buffer is replaced with decrypted data.
  * @param data_size [in] data size
  * @param aadata [in] Additional Authenticated data
  * @param aadata_size [in] aadata size
  * @param key [in] Cipher key
- * @param key_size [in] Ciper key size. This value must be 16, 24, or 32.
+ * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
  * @param iv [in] Initialization vector
  * @param tag [out] Calculated authentication tag data
  *
