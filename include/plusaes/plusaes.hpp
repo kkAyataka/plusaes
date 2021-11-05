@@ -644,7 +644,7 @@ inline void calc_gcm_tag(
     const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
 
     // return
-    memcpy(tag, &T[0], (std::min)(tag_size, 16ul));
+    memcpy(tag, &T[0], (std::min)(tag_size, static_cast<std::size_t>(16)));
 }
 
 /** Algorithm 4 and 5 @private */
