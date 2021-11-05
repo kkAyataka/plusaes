@@ -38,26 +38,26 @@ TEST_P(GcmCryptTest, encrypt_decript) {
 
     // Encrypt
     err = plusaes::encrypt_gcm(
-        &p.data[0], p.data.size(),
+        (p.data.empty()) ? 0 : &p.data[0], p.data.size(),
         (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
         &p.key[0], p.key.size(),
         &p.iv[0], p.iv.size(),
         tag, 16);
 
     EXPECT_EQ(err, plusaes::kErrorOk);
-    EXPECT_EQ(memcmp(&p.data[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
+    EXPECT_EQ(p.data.empty() ? 0 : memcmp(&p.data[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
     EXPECT_EQ(memcmp(tag, &p.ok_tag[0], p.ok_tag.size()), 0);
 
     // Decrypt
     err = plusaes::decrypt_gcm(
-        &p.data[0], p.data.size(),
+        (p.data.empty()) ? 0 : &p.data[0], p.data.size(),
         (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
         &p.key[0], p.key.size(),
         &p.iv[0], p.iv.size(),
         tag, 16);
 
     EXPECT_EQ(err, plusaes::kErrorOk);
-    EXPECT_EQ(memcmp(&p.data[0], &P[0], p.data.size()), 0);
+    EXPECT_EQ(p.data.empty() ? 0 : memcmp(&p.data[0], &P[0], p.data.size()), 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -635,26 +635,26 @@ TEST_P(GcmFixedCryptTest, encrypt_decript) {
 
     // Encrypt
     err = plusaes::encrypt_gcm(
-        &p.data[0], p.data.size(),
+        (p.data.empty()) ? 0 : &p.data[0], p.data.size(),
         (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
         &p.key[0], p.key.size(),
         &iv,
         &tag);
 
     EXPECT_EQ(err, plusaes::kErrorOk);
-    EXPECT_EQ(memcmp(&p.data[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
+    EXPECT_EQ(p.data.empty() ? 0 : memcmp(&p.data[0], &p.ok_encrypted[0], p.ok_encrypted.size()), 0);
     EXPECT_EQ(memcmp(tag, &p.ok_tag[0], p.ok_tag.size()), 0);
 
     // Decrypt
     err = plusaes::decrypt_gcm(
-        &p.data[0], p.data.size(),
+        (p.data.empty()) ? 0 : &p.data[0], p.data.size(),
         (p.aadata.empty()) ? 0 : &p.aadata[0], p.aadata.size(),
         &p.key[0], p.key.size(),
         &iv,
         &tag);
 
     EXPECT_EQ(err, plusaes::kErrorOk);
-    EXPECT_EQ(memcmp(&p.data[0], &P[0], p.data.size()), 0);
+    EXPECT_EQ(p.data.empty() ? 0 : memcmp(&p.data[0], &P[0], p.data.size()), 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -735,7 +735,6 @@ TEST_P(GcmInvalidSizeTest, invalid_size) {
     const auto p = GetParam();
 
     auto data = hs2b("00000000000000000000000000000000");
-    const auto aad = hs2b("");
     const auto key = hs2b("00000000000000000000000000000000");
     const auto iv = hs2b("000000000000000000000000");
     unsigned char tag[16] = {};
@@ -744,12 +743,12 @@ TEST_P(GcmInvalidSizeTest, invalid_size) {
     const auto encrypted = hs2b("0388dace60b6a392f328c2b971b2fe78");
 
     // encrypt
-    const auto e1 = plusaes::encrypt_gcm(&data[0], data.size(), &aad[0], aad.size(),
+    const auto e1 = plusaes::encrypt_gcm(&data[0], data.size(), 0, 0,
                                          &key[0], p.key_size, &iv[0], p.iv_size, tag, p.tag_size);
     EXPECT_EQ(e1, p.ok_error);
 
     // decrypt
-    const auto e2 = plusaes::decrypt_gcm(&data[0], data.size(), &aad[0], aad.size(),
+    const auto e2 = plusaes::decrypt_gcm(&data[0], data.size(), 0, 0,
                                          &key[0], p.key_size, &iv[0], p.iv_size, tag, p.tag_size);
 
     EXPECT_EQ(e2, p.ok_error);
@@ -792,20 +791,19 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(GcmInvalidTag, invalid_tag) {
     auto data = hs2b("00000000000000000000000000000000");
-    const auto aad = hs2b("");
     const auto key = hs2b("00000000000000000000000000000000");
     unsigned char iv[12] = {};
     memcpy(iv, &hs2b("000000000000000000000000")[0], 12);
     unsigned char tag[16] = {};
 
     // encrypt
-    const auto e1 = plusaes::encrypt_gcm(&data[0], data.size(), &aad[0], aad.size(),
+    const auto e1 = plusaes::encrypt_gcm(&data[0], data.size(), 0, 0,
                                          &key[0], key.size(), &iv, &tag);
     EXPECT_EQ(e1, plusaes::kErrorOk);
 
     // decrypt
     tag[0] += 1;
-    const auto e2 = plusaes::decrypt_gcm(&data[0], data.size(), &aad[0], aad.size(),
+    const auto e2 = plusaes::decrypt_gcm(&data[0], data.size(), 0, 0,
                                          &key[0], key.size(), &iv, &tag);
     EXPECT_EQ(e2, plusaes::kErrorInvalidTag);
 }

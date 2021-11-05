@@ -8,7 +8,7 @@
 /** hex string to bytes */
 inline std::vector<unsigned char> hs2b(std::string hex_string) {
     std::vector<unsigned char> bytes;
-    
+
     const auto end = std::remove_if(hex_string.begin(), hex_string.end(), [](const char c) { return c == ' '; });
     hex_string.erase(end, hex_string.end());
 
