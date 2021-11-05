@@ -666,7 +666,9 @@ inline void crypt_gcm(
 
     const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
 
-    memcpy(crypted, &C[0], data_size);
+    if (crypted) {
+        memcpy(crypted, &C[0], data_size);
+    }
 }
 
 } // namespce detail::gcm
