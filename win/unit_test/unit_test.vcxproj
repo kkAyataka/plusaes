@@ -168,12 +168,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\plusaes\plusaes.hpp" />
     <ClInclude Include="..\..\unit_test\lib\include\gtest\gtest.h" />
+    <ClInclude Include="..\..\unit_test\src\util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\unit_test\src\gtest\gtest-all.cc" />
     <ClCompile Include="..\..\unit_test\src\main.cpp" />
     <ClCompile Include="..\..\unit_test\src\test-ctr.cpp" />
     <ClCompile Include="..\..\unit_test\src\test-inc.cpp" />
+    <ClCompile Include="..\..\unit_test\src\test-gcm.cpp" />
     <ClCompile Include="..\..\unit_test\src\test-plusaes.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

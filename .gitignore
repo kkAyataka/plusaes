@@ -1,4 +1,5 @@
 # project-specific
+scripts/_cov
 scripts/_gh-pages
 lin*/unit_test/unit_test
 

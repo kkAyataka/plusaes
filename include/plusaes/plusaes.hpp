@@ -7,6 +7,9 @@
 #ifndef PLUSAES_HPP__
 #define PLUSAES_HPP__
 
+#include <algorithm>
+#include <bitset>
+#include <cmath>
 #include <cstring>
 #include <stdexcept>
 #include <vector>
@@ -333,7 +336,7 @@ std::vector<unsigned char> key_from_string(const char (*key_str)[KeyLen]) {
     return key;
 }
 
-inline bool is_valid_key_size(const unsigned long key_size) {
+inline bool is_valid_key_size(const std::size_t key_size) {
     if (key_size != 16 && key_size != 24 && key_size != 32) {
         return false;
     }
@@ -341,6 +344,335 @@ inline bool is_valid_key_size(const unsigned long key_size) {
         return true;
     }
 }
+
+
+namespace gcm {
+
+const int kBlockBitSize = 128;
+const int kBlockByteSize = kBlockBitSize / 8;
+
+/**
+ * @private
+ * GCM operation unit as bit.
+ * This library handles 128 bit little endian bit array.
+ * e.g. 0^127 || 1 == "000...0001" (bit string) == 1
+ */
+typedef std::bitset<kBlockBitSize> bitset128;
+
+/**
+ * @private
+ * GCM operation unit.
+ * Little endian byte array
+ *
+ * If bitset128 is 1: 0^127 || 1 == "000...0001" (bit string) == 1
+ * byte array is 0x00, 0x00, 0x00 ... 0x01 (low -> high).
+ * Byte array is NOT 0x01, 0x00 ... 0x00.
+ *
+ * This library handles GCM bit string in two ways.
+ * One is an array of bitset, which is a little endian 128-bit array's array.
+ *
+ * <- first byte
+ * bitset128 || bitset128 || bitset128...
+ *
+ * The other one is a byte array.
+ * <- first byte
+ * byte || byte || byte...
+ */
+class Block {
+public:
+    Block() {
+        init_v(0, 0);
+    }
+
+    Block(const unsigned char * bytes, const unsigned long bytes_size) {
+        init_v(bytes, bytes_size);
+    }
+
+    Block(const std::vector<unsigned char> & bytes) {
+        init_v(&bytes[0], bytes.size());
+    }
+
+    Block(const std::bitset<128> & bits) {
+        init_v(0, 0);
+        const std::bitset<128> mask(0xFF); // 1 byte mask
+        for (std::size_t i = 0; i < 16; ++i) {
+            v_[15 - i] = static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
+        }
+    }
+
+    inline unsigned char * data() {
+        return v_;
+    }
+
+    inline const unsigned char* data() const {
+        return v_;
+    }
+
+    inline std::bitset<128> to_bits() const {
+        std::bitset<128> bits;
+        for (int i = 0; i < 16; ++i) {
+            bits <<= 8;
+            bits |= v_[i];
+        }
+
+        return bits;
+    }
+
+    inline Block operator^(const Block & b) const {
+        Block r;
+        for (int i = 0; i < 16; ++i) {
+            r.data()[i] = data()[i] ^ b.data()[i];
+        }
+        return r;
+    }
+
+private:
+    unsigned char v_[16];
+
+    inline void init_v(const unsigned char * bytes, const std::size_t bytes_size) {
+        memset(v_, 0, sizeof(v_));
+
+        const std::size_t cs = (std::min)(bytes_size, static_cast<std::size_t>(16));
+        for (std::size_t i = 0; i < cs; ++i) {
+            v_[i] = bytes[i];
+        }
+    }
+};
+
+template<typename T>
+unsigned long ceil(const T v) {
+    return static_cast<unsigned long>(std::ceil(v) + 0.5);
+}
+
+template<std::size_t N1, std::size_t N2>
+std::bitset<N1 + N2> operator||(const std::bitset<N1> &v1, const std::bitset<N2> &v2) {
+    std::bitset<N1 + N2> ret(v1.to_string() + v2.to_string());
+    return ret;
+}
+
+template<std::size_t S, std::size_t N>
+std::bitset<S> lsb(const std::bitset<N> &X) {
+    std::bitset<S> r;
+    for (int i = 0; i < S; ++i) {
+        r[i] = X[i];
+    }
+    return r;
+}
+
+template<std::size_t S, std::size_t N>
+std::bitset<S> msb(const std::bitset<N> &X) {
+    std::bitset<S> r;
+    for (int i = 0; i < S; ++i) {
+        r[S - 1 - i] = X[X.size() - 1 - i];
+    }
+    return r;
+}
+
+template<std::size_t N>
+std::bitset<N> inc32(const std::bitset<N> X) {
+    const std::size_t S = 32;
+
+    const auto a = msb<N - S>(X);
+    const std::bitset<S> b((lsb<S>(X).to_ulong() + 1)); // % (2^32);
+        // lsb<32> is low 32-bit value
+        // Spec.'s "mod 2^S" is not necessary when S is 32 (inc32).
+        // ...and 2^32 is over 32-bit integer.
+
+    return a || b;
+}
+
+/** Algorithm 1 @private */
+inline Block mul_blocks(const Block X, const Block Y) {
+    const bitset128 R = (std::bitset<8>("11100001") || std::bitset<120>());
+
+    bitset128 X_bits = X.to_bits();
+    bitset128 Z;
+    bitset128 V = Y.to_bits();
+    for (int i = 127; i >= 0; --i) {
+        // Z
+        if (X_bits[i] == false) {
+            Z = Z;
+        }
+        else {
+            Z = Z ^ V;
+        }
+
+        // V
+        if (V[0] == false) {
+            V = V >> 1;
+        }
+        else {
+            V = (V >> 1) ^ R;
+        }
+    }
+
+    return Z;
+}
+
+/** Algorithm 2 @private */
+inline Block ghash(const Block & H, const std::vector<unsigned char> & X) {
+    const std::size_t m = X.size() / kBlockByteSize;
+    Block Ym;
+    for (std::size_t i = 0; i < m; ++i) {
+        const Block Xi(&X[i * kBlockByteSize], kBlockByteSize);
+        Ym = mul_blocks((Ym ^ Xi), H);
+    }
+
+    return Ym;
+}
+
+template<std::size_t N>
+std::bitset<N> make_bitset(const unsigned char * bytes, const std::size_t bytes_size) {
+    std::bitset<N> bits;
+    for (auto i = 0u; i < bytes_size; ++i) {
+        bits <<= 8;
+        bits |= bytes[i];
+    }
+    return bits;
+}
+
+/** Algorithm 3 @private */
+inline std::vector<unsigned char> gctr(const detail::RoundKeys & rkeys, const Block & ICB, const unsigned char * X, const std::size_t X_size){
+    if (!X || X_size == 0) {
+        return std::vector<unsigned char>();
+    }
+    else {
+        const unsigned long n = ceil(X_size * 8.0 / kBlockBitSize);
+        std::vector<unsigned char> Y(X_size);
+
+        Block CB;
+        for (std::size_t i = 0; i < n; ++i) {
+            // CB
+            if (i == 0) { // first
+                CB = ICB;
+            }
+            else {
+                CB = inc32(CB.to_bits());
+            }
+
+            // CIPH
+            Block eCB;
+            encrypt_state(rkeys, CB.data(), eCB.data());
+
+            // Y
+            int op_size = 0;
+            if (i < n - 1) {
+                op_size = kBlockByteSize;
+            }
+            else { // last
+                op_size = (X_size % kBlockByteSize) ? (X_size % kBlockByteSize) : kBlockByteSize;
+            }
+            const Block Yi = Block(X + i * kBlockBitSize / 8, op_size) ^ eCB;
+            memcpy(&Y[i * kBlockByteSize], Yi.data(), op_size);
+        }
+
+        return Y;
+    }
+}
+
+inline void push_back(std::vector<unsigned char> & bytes, const unsigned char * data, const std::size_t data_size) {
+    bytes.insert(bytes.end(), data, data + data_size);
+}
+
+inline void push_back(std::vector<unsigned char> & bytes, const std::bitset<64> & bits) {
+    const std::bitset<64> mask(0xFF); // 1 byte mask
+    for (std::size_t i = 0; i < 8; ++i) {
+        bytes.push_back(static_cast<unsigned char>(((bits >> ((7 - i) * 8)) & mask).to_ulong()));
+    }
+}
+
+inline void push_back_zero_bits(std::vector<unsigned char>& bytes, const std::size_t zero_bits_size) {
+    const std::vector<unsigned char> zero_bytes(zero_bits_size / 8);
+    bytes.insert(bytes.end(), zero_bytes.begin(), zero_bytes.end());
+}
+
+inline Block calc_H(const RoundKeys & rkeys) {
+    std::vector<unsigned char> H_raw(gcm::kBlockByteSize);
+    encrypt_state(rkeys, &H_raw[0], &H_raw[0]);
+    return gcm::Block(H_raw);
+}
+
+inline Block calc_J0(const Block & H, const unsigned char * iv, const std::size_t iv_size) {
+    if (iv_size == 12) {
+        const std::bitset<96> iv_bits = gcm::make_bitset<96>(iv, iv_size);
+        return iv_bits || std::bitset<31>() || std::bitset<1>(1);
+    }
+    else {
+        const auto len_iv = iv_size * 8;
+        const auto s = 128 * gcm::ceil(len_iv / 128.0) - len_iv;
+        std::vector<unsigned char> ghash_in;
+        gcm::push_back(ghash_in, iv, iv_size);
+        gcm::push_back_zero_bits(ghash_in, s + 64);
+        gcm::push_back(ghash_in, std::bitset<64>(len_iv));
+
+        return gcm::ghash(H, ghash_in);
+    }
+}
+
+inline void calc_gcm_tag(
+    const unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    unsigned char * tag,
+    const std::size_t tag_size
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
+
+    const auto lenC = data_size * 8;
+    const auto lenA = aadata_size * 8;
+    const std::size_t u = 128 * gcm::ceil(lenC / 128.0) - lenC;
+    const std::size_t v = 128 * gcm::ceil(lenA / 128.0) - lenA;
+
+    std::vector<unsigned char> ghash_in;
+    ghash_in.reserve((aadata_size + v / 8) + (data_size + u / 8) + 8 + 8);
+    gcm::push_back(ghash_in, aadata, aadata_size);
+    gcm::push_back_zero_bits(ghash_in, v);
+    gcm::push_back(ghash_in, data, data_size);
+    gcm::push_back_zero_bits(ghash_in, u);
+    gcm::push_back(ghash_in, std::bitset<64>(lenA));
+    gcm::push_back(ghash_in, std::bitset<64>(lenC));
+    const gcm::Block S = gcm::ghash(H, ghash_in);
+    const std::vector<unsigned char> T = gcm::gctr(rkeys, J0, S.data(), gcm::kBlockByteSize);
+
+    // return
+    memcpy(tag, &T[0], (std::min)(tag_size, static_cast<std::size_t>(16)));
+}
+
+/** Algorithm 4 and 5 @private */
+inline void crypt_gcm(
+    const unsigned char* data,
+    const std::size_t data_size,
+    const unsigned char* key,
+    const std::size_t key_size,
+    const unsigned char* iv,
+    const std::size_t iv_size,
+    unsigned char* crypted
+) {
+    using namespace detail;
+    using detail::gcm::operator||;
+
+    const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
+    const gcm::Block H = gcm::calc_H(rkeys);
+    const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
+
+    const std::vector<unsigned char> C = gcm::gctr(rkeys, gcm::inc32(J0.to_bits()), data, data_size);
+
+    if (crypted) {
+        memcpy(crypted, &C[0], data_size);
+    }
+}
+
+} // namespce detail::gcm
 
 } // namespace detail
 
@@ -376,7 +708,10 @@ typedef enum {
     kErrorInvalidKeySize,
     kErrorInvalidBufferSize,
     kErrorInvalidKey,
-    kErrorInvalidNonceSize
+    kErrorInvalidNonceSize,
+    kErrorInvalidIvSize,
+    kErrorInvalidTagSize,
+    kErrorInvalidTag
 } Error;
 
 namespace detail {
@@ -454,6 +789,30 @@ inline bool check_padding(const unsigned long padding, const unsigned char data[
     }
 
     return true;
+}
+
+inline Error check_gcm_cond(
+    const std::size_t key_size,
+    const std::size_t iv_size,
+    const std::size_t tag_size
+) {
+    // check key size
+    if (!detail::is_valid_key_size(key_size)) {
+        return kErrorInvalidKeySize;
+    }
+
+    if (iv_size < 1) {
+        return kErrorInvalidIvSize;
+    }
+
+    // check tag size
+    if ((tag_size < 12 || 16 < tag_size) &&
+        (tag_size != 8) &&
+        (tag_size != 4)) {
+        return kErrorInvalidTagSize;
+    }
+
+    return kErrorOk;
 }
 
 } // namespace detail
@@ -719,6 +1078,149 @@ inline Error decrypt_cbc(
 
     return kErrorOk;
 }
+
+/** @defgroup GCM GCM
+ * GCM mode functions
+ * @{ */
+
+/**
+ * Encrypts data with GCM mode and gets an authentication tag.
+ *
+ * You can specify iv size and tag size.
+ * But usually you should use the other overloaded function whose iv and tag size is fixed.
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidIvSize
+ * @returns kErrorInvalidTagSize
+ */
+inline Error encrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    unsigned char * tag,
+    const std::size_t tag_size
+) {
+    const Error err = detail::check_gcm_cond(key_size, iv_size, tag_size);
+    if (err != kErrorOk) {
+        return err;
+    }
+
+    detail::gcm::crypt_gcm(data, data_size, key, key_size, iv, iv_size, data);
+    detail::gcm::calc_gcm_tag(data, data_size, aadata, aadata_size, key, key_size, iv, iv_size, tag, tag_size);
+
+    return kErrorOk;
+}
+
+/**
+ * Encrypts data with GCM mode and gets an authentication tag.
+ *
+ * @param data [in,out] Input data and output buffer.
+ *      This buffer is replaced with encrypted data.
+ * @param data_size [in] data size
+ * @param aadata [in] Additional Authenticated data
+ * @param aadata_size [in] aadata size
+ * @param key [in] Cipher key
+ * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
+ * @param iv [in] Initialization vector
+ * @param tag [out] Calculated authentication tag data
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ */
+inline Error encrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char (*iv)[12],
+    unsigned char (*tag)[16]
+) {
+    return encrypt_gcm(data, data_size, aadata, aadata_size, key, key_size, *iv, 12, *tag, 16);
+}
+
+/**
+ * Decrypts data with GCM mode and checks an authentication tag.
+ *
+ * You can specify iv size and tag size.
+ * But usually you should use the other overloaded function whose iv and tag size is fixed.
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidIvSize
+ * @returns kErrorInvalidTagSize
+ * @returns kErrorInvalidTag
+ */
+inline Error decrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char * iv,
+    const std::size_t iv_size,
+    const unsigned char * tag,
+    const std::size_t tag_size
+) {
+    const Error err = detail::check_gcm_cond(key_size, iv_size, tag_size);
+    if (err != kErrorOk) {
+        return err;
+    }
+
+    unsigned char * C = data;
+    const auto C_size = data_size;
+    unsigned char tagd[16] = {};
+    detail::gcm::calc_gcm_tag(C, C_size, aadata, aadata_size, key, key_size, iv, iv_size, tagd, 16);
+
+    if (memcmp(tag, tagd, tag_size) != 0) {
+        return kErrorInvalidTag;
+    }
+    else {
+        detail::gcm::crypt_gcm(C, C_size, key, key_size, iv, iv_size, C);
+
+        return kErrorOk;
+    }
+}
+
+/**
+ * Decrypts data with GCM mode and checks an authentication tag.
+ *
+ * @param data [in,out] Input data and output buffer.
+ *      This buffer is replaced with decrypted data.
+ * @param data_size [in] data size
+ * @param aadata [in] Additional Authenticated data
+ * @param aadata_size [in] aadata size
+ * @param key [in] Cipher key
+ * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
+ * @param iv [in] Initialization vector
+ * @param tag [out] Calculated authentication tag data
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
+ * @returns kErrorInvalidTag
+ */
+inline Error decrypt_gcm(
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * aadata,
+    const std::size_t aadata_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char (*iv)[12],
+    const unsigned char (*tag)[16]
+) {
+    return decrypt_gcm(data, data_size, aadata, aadata_size, key, key_size, *iv, 12, *tag, 16);
+}
+
+/** @} */
 
 /**
  * @note
