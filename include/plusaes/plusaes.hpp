@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <bitset>
 #include <cmath>
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
