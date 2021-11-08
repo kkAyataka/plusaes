@@ -3,4 +3,3 @@
 
 # Consider building on Docker on Windows.
 lin/**/* text eol=lf
-lin-gcc_4.4.7/**/* text eol=lf
