@@ -1,9 +1,16 @@
 Change Log
 ==========
 
-## v0.9.X ()
+## X.X.X ()
 
 - Supports CTR mode ([Tronic](https://github.com/Tronic))
+
+
+## v0.10.0 (2021-11-08)
+
+- Supports GCM mode
+- Removes support of the GCC 4.4.7
+
 
 ## v0.9.2 (2020-03-27)
 
