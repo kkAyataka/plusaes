@@ -24,9 +24,10 @@ var NAVTREE =
 [
   [ "plusaes", "index.html", [
     [ "Development Environment", "index.html#autotoc_md0", null ],
-    [ "Supported block cipher mode of operation", "index.html#autotoc_md1", null ],
+    [ "Supported block cipher mode", "index.html#autotoc_md1", null ],
     [ "Usage", "index.html#autotoc_md2", null ],
     [ "License", "index.html#autotoc_md3", null ],
+    [ "Modules", "modules.html", "modules" ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [

@@ -96,13 +96,13 @@ Development Environment</h1>
 <li>Visual Studio 16 2019 (v142)</li>
 <li>Xcode 11.4 (Apple clang 11.0.0)</li>
 <li>GCC 4.8.5 (CentOS 7)</li>
-<li>GCC 4.4.7 (CentOS 6)</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md1"></a>
-Supported block cipher mode of operation</h1>
+Supported block cipher mode</h1>
 <ul>
 <li>ECB</li>
 <li>CBC</li>
+<li>GCM</li>
 <li>CTR (Beta)</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
@@ -145,10 +145,10 @@ License</h1>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="anamespaceplusaes_html_adc531ef3470499b9040e31b68cc4aa1f"><div class="ttname"><a href="namespaceplusaes.html#adc531ef3470499b9040e31b68cc4aa1f">plusaes::encrypt_cbc</a></div><div class="ttdeci">Error encrypt_cbc(const unsigned char *data, const unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char(*iv)[16], unsigned char *encrypted, const unsigned long encrypted_size, const bool pads)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:584</div></div>
-<div class="ttc" id="anamespaceplusaes_html_a858841c620e19a13f6f22caa3eeff9ba"><div class="ttname"><a href="namespaceplusaes.html#a858841c620e19a13f6f22caa3eeff9ba">plusaes::key_from_string</a></div><div class="ttdeci">std::vector&lt; unsigned char &gt; key_from_string(const char(*key_str)[17])</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:352</div></div>
-<div class="ttc" id="anamespaceplusaes_html_a692328ce4416353d44935ddfa7b945cf"><div class="ttname"><a href="namespaceplusaes.html#a692328ce4416353d44935ddfa7b945cf">plusaes::decrypt_cbc</a></div><div class="ttdeci">Error decrypt_cbc(const unsigned char *data, const unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char(*iv)[16], unsigned char *decrypted, const unsigned long decrypted_size, unsigned long *padded_size)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:659</div></div>
-<div class="ttc" id="anamespaceplusaes_html_aee09fea73a1746dfc4b84f20ee24ad96"><div class="ttname"><a href="namespaceplusaes.html#aee09fea73a1746dfc4b84f20ee24ad96">plusaes::get_padded_encrypted_size</a></div><div class="ttdeci">unsigned long get_padded_encrypted_size(const unsigned long data_size)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:367</div></div>
+<div class="ttc" id="anamespaceplusaes_html_adc531ef3470499b9040e31b68cc4aa1f"><div class="ttname"><a href="namespaceplusaes.html#adc531ef3470499b9040e31b68cc4aa1f">plusaes::encrypt_cbc</a></div><div class="ttdeci">Error encrypt_cbc(const unsigned char *data, const unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char(*iv)[16], unsigned char *encrypted, const unsigned long encrypted_size, const bool pads)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:944</div></div>
+<div class="ttc" id="anamespaceplusaes_html_a858841c620e19a13f6f22caa3eeff9ba"><div class="ttname"><a href="namespaceplusaes.html#a858841c620e19a13f6f22caa3eeff9ba">plusaes::key_from_string</a></div><div class="ttdeci">std::vector&lt; unsigned char &gt; key_from_string(const char(*key_str)[17])</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:685</div></div>
+<div class="ttc" id="anamespaceplusaes_html_a692328ce4416353d44935ddfa7b945cf"><div class="ttname"><a href="namespaceplusaes.html#a692328ce4416353d44935ddfa7b945cf">plusaes::decrypt_cbc</a></div><div class="ttdeci">Error decrypt_cbc(const unsigned char *data, const unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char(*iv)[16], unsigned char *decrypted, const unsigned long decrypted_size, unsigned long *padded_size)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:1019</div></div>
+<div class="ttc" id="anamespaceplusaes_html_aee09fea73a1746dfc4b84f20ee24ad96"><div class="ttname"><a href="namespaceplusaes.html#aee09fea73a1746dfc4b84f20ee24ad96">plusaes::get_padded_encrypted_size</a></div><div class="ttdeci">unsigned long get_padded_encrypted_size(const unsigned long data_size)</div><div class="ttdef"><b>Definition:</b> plusaes.hpp:700</div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>

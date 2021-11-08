@@ -4,7 +4,8 @@ var indexSectionsWithContent =
   1: "p",
   2: "cdegkv",
   3: "e",
-  4: "p"
+  4: "g",
+  5: "p"
 };
 
 var indexSectionNames =
@@ -13,7 +14,8 @@ var indexSectionNames =
   1: "namespaces",
   2: "functions",
   3: "enums",
-  4: "pages"
+  4: "groups",
+  5: "pages"
 };
 
 var indexSectionLabels =
@@ -22,6 +24,7 @@ var indexSectionLabels =
   1: "Namespaces",
   2: "Functions",
   3: "Enumerations",
-  4: "Pages"
+  4: "Modules",
+  5: "Pages"
 };
 

@@ -98,7 +98,11 @@ Enumerations</h2></td></tr>
 <b>kErrorInvalidBufferSize</b>, 
 <br />
 &#160;&#160;<b>kErrorInvalidKey</b>, 
-<b>kErrorInvalidNonceSize</b>
+<b>kErrorInvalidNonceSize</b>, 
+<b>kErrorInvalidIvSize</b>, 
+<b>kErrorInvalidTagSize</b>, 
+<br />
+&#160;&#160;<b>kErrorInvalidTag</b>
 <br />
  }</td></tr>
 <tr class="separator:aa70960d9b55120c1a64819be94a7a6a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,6 +127,14 @@ Functions</h2></td></tr>
 <tr class="separator:adc531ef3470499b9040e31b68cc4aa1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a692328ce4416353d44935ddfa7b945cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceplusaes.html#a692328ce4416353d44935ddfa7b945cf">decrypt_cbc</a> (const unsigned char *data, const unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char(*iv)[16], unsigned char *decrypted, const unsigned long decrypted_size, unsigned long *padded_size)</td></tr>
 <tr class="separator:a692328ce4416353d44935ddfa7b945cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5feb4969eb30368133223299a4003359"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___g_c_m.html#ga5feb4969eb30368133223299a4003359">encrypt_gcm</a> (unsigned char *data, const std::size_t data_size, const unsigned char *aadata, const std::size_t aadata_size, const unsigned char *key, const std::size_t key_size, const unsigned char *iv, const std::size_t iv_size, unsigned char *tag, const std::size_t tag_size)</td></tr>
+<tr class="separator:ga5feb4969eb30368133223299a4003359"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54e129641ae414898dafa1259697eb13"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___g_c_m.html#ga54e129641ae414898dafa1259697eb13">encrypt_gcm</a> (unsigned char *data, const std::size_t data_size, const unsigned char *aadata, const std::size_t aadata_size, const unsigned char *key, const std::size_t key_size, const unsigned char(*iv)[12], unsigned char(*tag)[16])</td></tr>
+<tr class="separator:ga54e129641ae414898dafa1259697eb13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9e9a0e09b1fedcc640c699736deee2bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___g_c_m.html#ga9e9a0e09b1fedcc640c699736deee2bc">decrypt_gcm</a> (unsigned char *data, const std::size_t data_size, const unsigned char *aadata, const std::size_t aadata_size, const unsigned char *key, const std::size_t key_size, const unsigned char *iv, const std::size_t iv_size, const unsigned char *tag, const std::size_t tag_size)</td></tr>
+<tr class="separator:ga9e9a0e09b1fedcc640c699736deee2bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab8919205d24bd2acc564734069e59427"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___g_c_m.html#gab8919205d24bd2acc564734069e59427">decrypt_gcm</a> (unsigned char *data, const std::size_t data_size, const unsigned char *aadata, const std::size_t aadata_size, const unsigned char *key, const std::size_t key_size, const unsigned char(*iv)[12], const unsigned char(*tag)[16])</td></tr>
+<tr class="separator:gab8919205d24bd2acc564734069e59427"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35bd805fb0b06b8af52d2dc10e9fbd2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceplusaes.html#aa70960d9b55120c1a64819be94a7a6a8">Error</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceplusaes.html#a35bd805fb0b06b8af52d2dc10e9fbd2e">crypt_ctr</a> (unsigned char *data, unsigned long data_size, const unsigned char *key, const unsigned long key_size, const unsigned char *nonce, const unsigned long nonce_size)</td></tr>
 <tr class="separator:a35bd805fb0b06b8af52d2dc10e9fbd2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
