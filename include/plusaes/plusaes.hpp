@@ -16,7 +16,7 @@
 
 /** Version number of plusaes.
  * 0x01020304 -> 1.2.3.4 */
-#define PLUSAES_VERSION 0x00090200
+#define PLUSAES_VERSION 0x000A0000
 
 /** AES cipher APIs */
 namespace plusaes {
