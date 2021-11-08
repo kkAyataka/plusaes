@@ -1,4 +1,0 @@
-autoheader
-aclocal
-automake -a
-autoconf
