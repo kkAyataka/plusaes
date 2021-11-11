@@ -1120,15 +1120,15 @@ inline Error encrypt_gcm(
 /**
  * Encrypts data with GCM mode and gets an authentication tag.
  *
- * @param data [in,out] Input data and output buffer.
+ * @param [in,out] data Input data and output buffer.
  *      This buffer is replaced with encrypted data.
- * @param data_size [in] data size
- * @param aadata [in] Additional Authenticated data
- * @param aadata_size [in] aadata size
- * @param key [in] Cipher key
- * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
- * @param iv [in] Initialization vector
- * @param tag [out] Calculated authentication tag data
+ * @param [in] data_size data size
+ * @param [in] aadata Additional Authenticated data
+ * @param [in] aadata_size aadata size
+ * @param [in] key Cipher key
+ * @param [in] key_size Cipher key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
+ * @param [in] iv Initialization vector
+ * @param [out] tag Calculated authentication tag data
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
@@ -1193,15 +1193,15 @@ inline Error decrypt_gcm(
 /**
  * Decrypts data with GCM mode and checks an authentication tag.
  *
- * @param data [in,out] Input data and output buffer.
+ * @param [in,out] data Input data and output buffer.
  *      This buffer is replaced with decrypted data.
- * @param data_size [in] data size
- * @param aadata [in] Additional Authenticated data
- * @param aadata_size [in] aadata size
- * @param key [in] Cipher key
- * @param key_size [in] Ciper key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
- * @param iv [in] Initialization vector
- * @param tag [out] Calculated authentication tag data
+ * @param [in] data_size data size
+ * @param [in] aadata Additional Authenticated data
+ * @param [in] aadata_size aadata size
+ * @param [in] key Cipher key
+ * @param [in] key_size Cipher key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
+ * @param [in] iv Initialization vector
+ * @param [in] tag Authentication tag data
  *
  * @returns kErrorOk
  * @returns kErrorInvalidKeySize
