@@ -708,7 +708,7 @@ typedef enum {
     kErrorInvalidKeySize,
     kErrorInvalidBufferSize,
     kErrorInvalidKey,
-    kErrorInvalidNonceSize,
+    kErrorDeprecated, // kErrorInvalidNonceSize
     kErrorInvalidIvSize,
     kErrorInvalidTagSize,
     kErrorInvalidTag
@@ -1222,35 +1222,39 @@ inline Error decrypt_gcm(
 
 /** @} */
 
+/** @defgroup CTR CTR
+ * CTR mode function
+ * @{ */
+
 /**
- * @note
- * This is BETA API. I might change API in the future.
- *
  * Encrypts or decrypt data in-place with CTR mode.
- * @param [in,out]  data Data.
- * @param [in,out]  data_size Data size.
- * @param [in]  key key bytes. The key length must be 16 (128-bit), 24 (192-bit) or 32 (256-bit).
- * @param [in]  key_size key size.
- * @param [in]  nonce 16 bytes.
+ *
+ * @param [in,out] data Input data and output buffer.
+ *      This buffer is replaced with encrypted / decrypted data.
+ * @param [in] data_size Data size.
+ * @param [in] key Cipher key
+ * @param [in] key_size Cipher key size. This value must be 16 (128-bit), 24 (192-bit), or 32 (256-bit).
+ * @param [in] nonce Nonce of the counter initialization.
+ *
+ * @returns kErrorOk
+ * @returns kErrorInvalidKeySize
  * @since 1.0.0
  */
 inline Error crypt_ctr(
-    unsigned char *data,
-    unsigned long data_size,
-    const unsigned char *key,
-    const unsigned long key_size,
-    const unsigned char *nonce,
-    const unsigned long nonce_size
+    unsigned char * data,
+    const std::size_t data_size,
+    const unsigned char * key,
+    const std::size_t key_size,
+    const unsigned char (*nonce)[16]
 ) {
-    if (nonce_size > detail::kStateSize) return kErrorInvalidNonceSize;
     if (!detail::is_valid_key_size(key_size)) return kErrorInvalidKeySize;
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
 
     unsigned long pos = 0;
     unsigned long blkpos = detail::kStateSize;
-    unsigned char blk[detail::kStateSize];
+    unsigned char blk[detail::kStateSize] = {};
     unsigned char counter[detail::kStateSize] = {};
-    memcpy(counter, nonce, nonce_size);
+    memcpy(counter, nonce, 16);
 
     while (pos < data_size) {
         if (blkpos == detail::kStateSize) {
@@ -1263,6 +1267,8 @@ inline Error crypt_ctr(
 
     return kErrorOk;
 }
+
+/** @} */
 
 } // namespace plusaes
 
