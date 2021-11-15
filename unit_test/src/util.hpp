@@ -5,6 +5,16 @@
 #include <string>
 #include <vector>
 
+typedef std::vector<unsigned char> uchar_vec;
+
+#define DATA_T(v) v
+#define AADATA_T(v) v
+#define KEY_T(v) v
+#define IV_T(v) v
+#define NONCE_T(v) v
+#define OK_ENCRYPTED_T(v) v
+#define OK_TAG_T(v) v
+
 /** hex string to bytes */
 inline std::vector<unsigned char> hs2b(std::string hex_string) {
     std::vector<unsigned char> bytes;

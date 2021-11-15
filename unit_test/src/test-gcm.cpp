@@ -4,14 +4,6 @@
 
 #include "util.hpp"
 
-typedef std::vector<unsigned char> uchar_vec;
-#define DATA_T(v) v
-#define AADATA_T(v) v
-#define KEY_T(v) v
-#define IV_T(v) v
-#define OK_ENCRYPTED_T(v) v
-#define OK_TAG_T(v) v
-
 struct GcmTestParam {
     std::string desc;
     uchar_vec data;
