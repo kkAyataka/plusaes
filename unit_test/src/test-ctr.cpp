@@ -178,3 +178,49 @@ INSTANTIATE_TEST_SUITE_P(
     ),
     testing::PrintToStringParamName()
 );
+
+//------------------------------------------------------------------------------
+// Invalid parameter size
+//------------------------------------------------------------------------------
+
+class CtrInvalidSizeTestParam {
+public:
+    std::size_t key_size;
+    plusaes::Error ok_error;
+};
+
+class CtrInvalidSizeTest : public testing::TestWithParam<CtrInvalidSizeTestParam> {
+};
+
+TEST_P(CtrInvalidSizeTest, invalid_size) {
+    const auto p = GetParam();
+
+    auto data = hs2b("00000000000000000000000000000000");
+    const auto key = hs2b("00000000000000000000000000000000");
+    const unsigned char nonce[16] = {};
+
+    // encrypt
+    const auto e1 = plusaes::crypt_ctr(&data[0], data.size(), &key[0], p.key_size, &nonce);
+    EXPECT_EQ(e1, p.ok_error);
+
+    // decrypt
+    const auto e2 = plusaes::crypt_ctr(&data[0], data.size(), &key[0], p.key_size, &nonce);
+    EXPECT_EQ(e2, p.ok_error);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    InvalidSize,
+    CtrInvalidSizeTest,
+    testing::Values(
+        CtrInvalidSizeTestParam{0, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{15, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{16, plusaes::kErrorOk},
+        CtrInvalidSizeTestParam{17, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{23, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{24, plusaes::kErrorOk},
+        CtrInvalidSizeTestParam{25, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{31, plusaes::kErrorInvalidKeySize},
+        CtrInvalidSizeTestParam{32, plusaes::kErrorOk},
+        CtrInvalidSizeTestParam{33, plusaes::kErrorInvalidKeySize}
+    )
+);
