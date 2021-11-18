@@ -10,7 +10,7 @@ Header only C++ AES cipher library.
 ## Development Environment
 
 - Visual Studio 16 2022 (v143)
-- Xcode 11.4 (Apple clang 11.0.0)
+- Xcode 13.1 (Apple clang 13.0.0)
 - GCC 4.8.5 (CentOS 7)
 
 
@@ -19,7 +19,7 @@ Header only C++ AES cipher library.
 - ECB
 - CBC
 - GCM
-- CTR (Beta)
+- CTR
 
 
 ## Usage

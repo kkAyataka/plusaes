@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## X.X.X ()
+## v1.0.0 (2021-11-18)
 
 - Supports CTR mode ([Tronic](https://github.com/Tronic))
 
