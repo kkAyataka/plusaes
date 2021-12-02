@@ -453,7 +453,7 @@ std::bitset<N1 + N2> operator||(const std::bitset<N1> &v1, const std::bitset<N2>
 template<std::size_t S, std::size_t N>
 std::bitset<S> lsb(const std::bitset<N> &X) {
     std::bitset<S> r;
-    for (int i = 0; i < S; ++i) {
+    for (std::size_t i = 0; i < S; ++i) {
         r[i] = X[i];
     }
     return r;
@@ -462,7 +462,7 @@ std::bitset<S> lsb(const std::bitset<N> &X) {
 template<std::size_t S, std::size_t N>
 std::bitset<S> msb(const std::bitset<N> &X) {
     std::bitset<S> r;
-    for (int i = 0; i < S; ++i) {
+    for (std::size_t i = 0; i < S; ++i) {
         r[S - 1 - i] = X[X.size() - 1 - i];
     }
     return r;
