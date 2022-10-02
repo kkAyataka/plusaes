@@ -9,7 +9,7 @@ Header only C++ AES cipher library.
 
 ## Development Environment
 
-- Visual Studio 16 2019 (v142)
+- Visual Studio 16 2022 (v143)
 - Xcode 11.4 (Apple clang 11.0.0)
 - GCC 4.8.5 (CentOS 7)
 
