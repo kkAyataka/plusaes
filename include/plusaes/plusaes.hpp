@@ -621,9 +621,6 @@ inline void calc_gcm_tag(
     unsigned char * tag,
     const std::size_t tag_size
 ) {
-    using namespace detail;
-    using detail::gcm::operator||;
-
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
     const gcm::Block H = gcm::calc_H(rkeys);
     const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
@@ -658,9 +655,6 @@ inline void crypt_gcm(
     const std::size_t iv_size,
     unsigned char* crypted
 ) {
-    using namespace detail;
-    using detail::gcm::operator||;
-
     const detail::RoundKeys rkeys = detail::expand_key(key, static_cast<int>(key_size));
     const gcm::Block H = gcm::calc_H(rkeys);
     const gcm::Block J0 = gcm::calc_J0(H, iv, iv_size);
