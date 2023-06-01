@@ -490,10 +490,7 @@ inline Block mul_blocks(const Block X, const Block Y) {
     bitset128 V = Y.to_bits();
     for (int i = 127; i >= 0; --i) {
         // Z
-        if (X_bits[i] == false) {
-            Z = Z;
-        }
-        else {
+        if (X_bits[i] == true) {
             Z = Z ^ V;
         }
 
