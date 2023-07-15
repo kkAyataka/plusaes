@@ -820,6 +820,10 @@ inline Error check_gcm_cond(
 
 } // namespace detail
 
+/** @defgroup ECB ECB
+ * ECB mode functions
+ * @{ */
+
 /**
  * Encrypts data with ECB mode.
  * @param [in]  data Data.
@@ -927,6 +931,12 @@ inline Error decrypt_ecb(
 
     return kErrorOk;
 }
+
+/** @} */
+
+/** @defgroup CBC CBC
+ * CBC mode functions
+ * @{ */
 
 /**
  * Encrypt data with CBC mode.
@@ -1081,6 +1091,8 @@ inline Error decrypt_cbc(
 
     return kErrorOk;
 }
+
+/** @} */
 
 /** @defgroup GCM GCM
  * GCM mode functions
