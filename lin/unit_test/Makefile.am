@@ -4,15 +4,15 @@ SRCDIR = $(ROOTDIR)/src
 
 CXXFLAGS += -std=c++11
 
-INCLUDES = \
-  -I../../include \
-  -I$(ROOTDIR)/lib/include \
-  -I$(SRCDIR)/gtest
-
 LDADD = \
   -lpthread
 
 bin_PROGRAMS = unit_test
+
+unit_test_CXXFLAGS = \
+  -I../../include \
+  -I$(ROOTDIR)/lib/include \
+  -I$(SRCDIR)/gtest
 
 unit_test_SOURCES = \
   $(SRCDIR)/gtest/gtest-all.cc \
