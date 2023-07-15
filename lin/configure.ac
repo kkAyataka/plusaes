@@ -8,7 +8,7 @@ AC_CONFIG_HEADER([config.h])
 
 
 # Checks for programs.
-${CXXFLAGS="-O2"}
+: ${CXXFLAGS=-Wall -O2}
 AC_PROG_CC
 AC_PROG_CXX
 
