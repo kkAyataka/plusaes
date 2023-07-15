@@ -481,6 +481,11 @@ std::bitset<N> inc32(const std::bitset<N> X) {
     return a || b;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign"
+#endif // __clang__
+
 /** Algorithm 1 @private */
 inline Block mul_blocks(const Block X, const Block Y) {
     const bitset128 R = (std::bitset<8>("11100001") || std::bitset<120>());
@@ -508,6 +513,10 @@ inline Block mul_blocks(const Block X, const Block Y) {
 
     return Z;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 
 /** Algorithm 2 @private */
 inline Block ghash(const Block & H, const std::vector<unsigned char> & X) {
