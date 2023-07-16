@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['key_5ffrom_5fstring_10',['key_from_string',['../namespaceplusaes.html#a858841c620e19a13f6f22caa3eeff9ba',1,'plusaes::key_from_string(const char(*key_str)[17])'],['../namespaceplusaes.html#ac035a7395824f9fc94b6c680077ff3b5',1,'plusaes::key_from_string(const char(*key_str)[25])'],['../namespaceplusaes.html#a012a2e63accb35a7f7e8c66ce774eb92',1,'plusaes::key_from_string(const char(*key_str)[33])']]]
+  ['gcm_0',['GCM',['../group___g_c_m.html',1,'']]],
+  ['get_5fpadded_5fencrypted_5fsize_1',['get_padded_encrypted_size',['../group___base.html#gaee09fea73a1746dfc4b84f20ee24ad96',1,'plusaes']]]
 ];
