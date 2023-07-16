@@ -1,9 +1,11 @@
 Change Log
 ==========
 
-## v1.0.0 (2021-11-18)
+## v1.0.0 (2023-07-16)
 
-- Supports CTR mode ([Tronic](https://github.com/Tronic))
+- Supports CTR mode (Removes BETA) ([Tronic](https://github.com/Tronic))
+- Update development environment
+- Remove warnings
 
 
 ## v0.10.0 (2021-11-08)
@@ -17,7 +19,7 @@ Change Log
 - Fix unamed struct warning/error ([#15](https://github.com/kkAyataka/plusaes/issues/15))
 - Fix memcpy declaration error ([#17](https://github.com/kkAyataka/plusaes/issues/17))
 - Add get_padded_encrypted_size function
-- Update the development environment
+- Update development environment
 
 
 ## v0.9.1 (2020-03-28)
