@@ -14,9 +14,14 @@
 #include <stdexcept>
 #include <vector>
 
-/** Version number of plusaes.
+/** @defgroup Base
+ * @{ */
+
+/** Version number of the plusaes.
  * 0x01020304 -> 1.2.3.4 */
-#define PLUSAES_VERSION 0x000A0000
+#define PLUSAES_VERSION 0x01000000
+
+/** @} */
 
 /** AES cipher APIs */
 namespace plusaes {
@@ -679,6 +684,10 @@ inline void crypt_gcm(
 
 } // namespace detail
 
+/** @defgroup Base Base
+ * Base definitions and convenient functions
+ * @{ */
+
 /** Version number of plusaes. */
 inline unsigned int version() {
     return PLUSAES_VERSION;
@@ -716,6 +725,8 @@ typedef enum {
     kErrorInvalidTagSize,
     kErrorInvalidTag
 } Error;
+
+/** @} */
 
 namespace detail {
 
