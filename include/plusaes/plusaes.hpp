@@ -438,7 +438,7 @@ private:
     }
 };
 
-// Workaround for clang optimization in 32-bit build via Visual Studio producing incorrect results
+// Workaround for clang optimization in 32-bit build via Visual Studio producing incorrect results (https://github.com/kkAyataka/plusaes/issues/43)
 #if defined(__clang__) && defined(_WIN32) && !defined(_WIN64)
 #pragma optimize("", off)
 #endif
