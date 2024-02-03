@@ -397,13 +397,7 @@ public:
         init_v(&bytes[0], bytes.size());
     }
 
-    Block(const std::bitset<128> & bits) {
-        init_v(0, 0);
-        const std::bitset<128> mask(0xFF); // 1 byte mask
-        for (std::size_t i = 0; i < 16; ++i) {
-            v_[15 - i] = static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
-        }
-    }
+    Block(const std::bitset<128> & bits); // implementation below
 
     inline unsigned char * data() {
         return v_;
@@ -443,6 +437,22 @@ private:
         }
     }
 };
+
+// Workaround for clang optimization in 32-bit build via Visual Studio producing incorrect results (https://github.com/kkAyataka/plusaes/issues/43)
+#if defined(__clang__) && defined(_WIN32) && !defined(_WIN64)
+#pragma optimize("", off)
+#endif
+inline Block::Block(const std::bitset<128> & bits)
+{
+    init_v(0, 0);
+    const std::bitset<128> mask(0xFF); // 1 byte mask
+    for (std::size_t i = 0; i < 16; ++i) {
+        v_[15 - i] = static_cast<unsigned char>(((bits >> (i * 8)) & mask).to_ulong());
+    }
+}
+#if defined(__clang__) && defined(_WIN32) && !defined(_WIN64)
+#pragma optimize("", on)
+#endif
 
 template<typename T>
 unsigned long ceil(const T v) {
